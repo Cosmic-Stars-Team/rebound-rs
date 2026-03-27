@@ -5,3 +5,4 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+rebound-bind.workspace = true

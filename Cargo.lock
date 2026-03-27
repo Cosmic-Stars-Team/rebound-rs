@@ -175,6 +175,9 @@ dependencies = [
 [[package]]
 name = "rebound"
 version = "4.6.0"
+dependencies = [
+ "rebound-bind",
+]
 
 [[package]]
 name = "rebound-bind"

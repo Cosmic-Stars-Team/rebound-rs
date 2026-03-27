@@ -8,4 +8,4 @@ license.workspace = true
 
 [build-dependencies]
 bindgen.workspace = true
-cc = "1.2"
+cc.workspace = true
