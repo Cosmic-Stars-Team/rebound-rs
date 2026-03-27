@@ -1,0 +1,15 @@
+[workspace]
+resolver = "3"
+members = ["rebound", "bind/rebound"]
+default-members = ["rebound"]
+
+[workspace.package]
+version = "4.6.0"
+edition = "2024"
+license = "GPL-3.0"
+
+[workspace.dependencies]
+bindgen = "0.72.1"
+
+rebound = { path = "./rebound" }
+rebound-bind = { path = "./bind/rebound" }
