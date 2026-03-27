@@ -1,4 +1,5 @@
 mod integrator;
+mod particles;
 mod traits;
 
 use rebound_bind as rb;
