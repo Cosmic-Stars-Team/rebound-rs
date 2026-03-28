@@ -32,9 +32,10 @@ impl Simulation {
         Self::default()
     }
 
-    pub fn configure_box(&mut self, boxsize: f64, n_root_x: i32, n_root_y: i32, n_root_z: i32) {
+    pub fn configure_box(self, boxsize: f64, n_root_x: i32, n_root_y: i32, n_root_z: i32) -> Self {
         unsafe {
             rb::reb_simulation_configure_box(self.inner, boxsize, n_root_x, n_root_y, n_root_z);
         }
+        self
     }
 }

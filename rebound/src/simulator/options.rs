@@ -25,14 +25,14 @@ impl From<Integrator> for rb::reb_simulation__bindgen_ty_2 {
 }
 
 impl Simulation {
-    pub fn set_g(&mut self, g: f64) -> &mut Self {
+    pub fn set_g(self, g: f64) -> Self {
         unsafe {
             (*self.inner).G = g;
         }
         self
     }
 
-    pub fn set_integrator(&mut self, integrator: Integrator) -> &mut Self {
+    pub fn set_integrator(self, integrator: Integrator) -> Self {
         unsafe {
             (*self.inner).integrator = integrator.into();
         }
