@@ -1,7 +1,9 @@
 mod integrator;
+mod options;
 mod particles;
 mod traits;
 
+pub use options::Integrator;
 use rebound_bind as rb;
 
 pub struct Simulation {

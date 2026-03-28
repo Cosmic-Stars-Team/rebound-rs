@@ -4,7 +4,7 @@ use super::Simulation;
 use rebound_bind as rb;
 
 impl Simulation {
-    pub fn integrate(&self, tmax: f64) -> Result<()> {
+    pub fn integrate(&mut self, tmax: f64) -> Result<()> {
         let status = unsafe { rb::reb_simulation_integrate(self.inner, tmax) };
 
         match Error::from_reb_status(status) {
