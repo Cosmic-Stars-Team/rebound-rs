@@ -1,8 +1,13 @@
-use crate::simulator::Simulation;
+mod builder;
+
+// use crate::simulator::Simulation;
 use rebound_bind as rb;
+
+pub use builder::ParticleBuilder;
 
 pub type ParticlePosition = (f64, f64, f64);
 
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Particle {
     pub mess: f64,
     pub position: ParticlePosition,
