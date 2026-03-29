@@ -107,7 +107,7 @@ macro_rules! create_particle {
         compile_error!(concat!(
             "Unsupported field for create_particle!: ",
             stringify!($field),
-            ". supported fields: hash, mess, x, y, z, vx, vy, vz"
+            ". supported fields: hash, mass, x, y, z, vx, vy, vz"
         ));
     };
 }
@@ -124,14 +124,14 @@ mod tests {
             vy: 0.2,
             vz: 0.3,
         };
-        assert_eq!(p1.mess, 0.0);
+        assert_eq!(p1.mass, 0.0);
         assert_eq!(p1.position, (1.0, 2.0, 3.0));
         assert_eq!(p1.velocity, (0.1, 0.2, 0.3));
 
         let p2 = create_particle! {
-            mess: 1.0,
+            mass: 1.0,
         };
-        assert_eq!(p2.mess, 1.0);
+        assert_eq!(p2.mass, 1.0);
         assert_eq!(p2.position, (0.0, 0.0, 0.0));
         assert_eq!(p2.velocity, (0.0, 0.0, 0.0));
     }
