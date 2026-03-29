@@ -12,30 +12,28 @@ impl Simulation {
     }
 
     pub fn get_particle(&self, index: usize) -> Option<ParticleRef<'_>> {
-        unsafe {
-            let len = (*self.inner).N as usize;
-            if index >= len {
-                return None;
-            }
-
-            let particle = (*self.inner).particles.add(index);
-            Some(ParticleRef {
-                inner: particle,
-                _sim: self,
-            })
+        let len = unsafe { (*self.inner).N as usize };
+        if index >= len {
+            return None;
         }
+
+        let particle = unsafe { (*self.inner).particles.add(index) };
+        Some(ParticleRef {
+            inner: particle,
+            _sim: self,
+        })
     }
 
     pub fn get_particle_by_hash(&self, hash: u32) -> Option<ParticleRef<'_>> {
-        unsafe {
-            let particle = rb::reb_simulation_particle_by_hash(self.inner, hash);
-            if particle.is_null() {
-                return None;
-            }
-            Some(ParticleRef {
-                inner: particle,
-                _sim: self,
-            })
+        let particle = unsafe { rb::reb_simulation_particle_by_hash(self.inner, hash) };
+
+        if particle.is_null() {
+            return None;
         }
+
+        Some(ParticleRef {
+            inner: particle,
+            _sim: self,
+        })
     }
 }

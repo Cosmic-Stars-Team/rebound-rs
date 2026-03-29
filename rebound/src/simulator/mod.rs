@@ -15,10 +15,8 @@ pub struct Simulation {
 
 impl Default for Simulation {
     fn default() -> Self {
-        unsafe {
-            let inner = rb::reb_simulation_create();
-            Self { inner }
-        }
+        let inner = unsafe { rb::reb_simulation_create() };
+        Self { inner }
     }
 }
 
