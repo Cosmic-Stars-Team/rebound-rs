@@ -2,6 +2,7 @@ mod integrator;
 mod options;
 mod particles;
 mod traits;
+mod transfer;
 
 pub use options::Integrator;
 use rebound_bind as rb;
