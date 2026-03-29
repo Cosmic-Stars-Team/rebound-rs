@@ -58,6 +58,18 @@ impl Simulation {
         self
     }
 
+    pub fn reset_integrator(&mut self) {
+        unsafe {
+            rb::reb_simulation_reset_integrator(self.inner);
+        }
+    }
+
+    pub fn synchronize(&mut self) {
+        unsafe {
+            rb::reb_simulation_synchronize(self.inner);
+        }
+    }
+
     pub fn integrate(&mut self, tmax: f64) -> Result<()> {
         let status = unsafe { rb::reb_simulation_integrate(self.inner, tmax) };
 
