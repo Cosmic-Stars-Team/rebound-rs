@@ -1,7 +1,7 @@
 use rebound_bind as rb;
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
-pub enum Error {
+pub enum IntegrateError {
     #[error("Performing a single step, then switching to PAUSED.")]
     SingleStep,
     #[error("Screenshot is ready, send back, then finish integration.")]
@@ -29,32 +29,39 @@ pub enum Error {
     #[error("The integration ends early because two particles collided.")]
     Collision,
 
-    #[error("Error: {0}")]
-    Custom(String),
     #[error("Unknown REBOUND status code: {0}")]
     UnknownStatus(rb::REB_STATUS),
 }
 
-impl Error {
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum Error {
+    #[error("Integration error: {0}")]
+    Integrate(#[from] IntegrateError),
+
+    #[error("Error: {0}")]
+    Custom(String),
+}
+
+impl IntegrateError {
     pub fn from_reb_status(status: rb::REB_STATUS) -> Option<Self> {
         if status == rb::REB_STATUS_REB_STATUS_SUCCESS {
             None
         } else {
             Some(match status {
-                rb::REB_STATUS_REB_STATUS_SINGLE_STEP => Error::SingleStep,
-                rb::REB_STATUS_REB_STATUS_SCREENSHOT_READY => Error::ScreenshotReady,
-                rb::REB_STATUS_REB_STATUS_SCREENSHOT => Error::Screenshot,
-                rb::REB_STATUS_REB_STATUS_PAUSED => Error::Paused,
-                rb::REB_STATUS_REB_STATUS_LAST_STEP => Error::LastStep,
-                rb::REB_STATUS_REB_STATUS_RUNNING => Error::Running,
-                rb::REB_STATUS_REB_STATUS_GENERIC_ERROR => Error::GenericError,
-                rb::REB_STATUS_REB_STATUS_NO_PARTICLES => Error::NoParticles,
-                rb::REB_STATUS_REB_STATUS_ENCOUNTER => Error::Encounter,
-                rb::REB_STATUS_REB_STATUS_ESCAPE => Error::Escape,
-                rb::REB_STATUS_REB_STATUS_USER => Error::User,
-                rb::REB_STATUS_REB_STATUS_SIGINT => Error::Sigint,
-                rb::REB_STATUS_REB_STATUS_COLLISION => Error::Collision,
-                _ => Error::UnknownStatus(status),
+                rb::REB_STATUS_REB_STATUS_SINGLE_STEP => IntegrateError::SingleStep,
+                rb::REB_STATUS_REB_STATUS_SCREENSHOT_READY => IntegrateError::ScreenshotReady,
+                rb::REB_STATUS_REB_STATUS_SCREENSHOT => IntegrateError::Screenshot,
+                rb::REB_STATUS_REB_STATUS_PAUSED => IntegrateError::Paused,
+                rb::REB_STATUS_REB_STATUS_LAST_STEP => IntegrateError::LastStep,
+                rb::REB_STATUS_REB_STATUS_RUNNING => IntegrateError::Running,
+                rb::REB_STATUS_REB_STATUS_GENERIC_ERROR => IntegrateError::GenericError,
+                rb::REB_STATUS_REB_STATUS_NO_PARTICLES => IntegrateError::NoParticles,
+                rb::REB_STATUS_REB_STATUS_ENCOUNTER => IntegrateError::Encounter,
+                rb::REB_STATUS_REB_STATUS_ESCAPE => IntegrateError::Escape,
+                rb::REB_STATUS_REB_STATUS_USER => IntegrateError::User,
+                rb::REB_STATUS_REB_STATUS_SIGINT => IntegrateError::Sigint,
+                rb::REB_STATUS_REB_STATUS_COLLISION => IntegrateError::Collision,
+                _ => IntegrateError::UnknownStatus(status),
             })
         }
     }
