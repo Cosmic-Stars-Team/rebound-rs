@@ -1,6 +1,24 @@
 use rebound_bind as rb;
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum SetError {
+    #[error("Invalid value for `{field}`: {message}")]
+    InvalidValue {
+        field: &'static str,
+        message: String,
+    },
+}
+
+impl SetError {
+    pub fn invalid(field: &'static str, message: impl Into<String>) -> Self {
+        Self::InvalidValue {
+            field,
+            message: message.into(),
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum IntegrateError {
     #[error("Performing a single step, then switching to PAUSED.")]
     SingleStep,
@@ -37,6 +55,9 @@ pub enum IntegrateError {
 pub enum Error {
     #[error("Integration error: {0}")]
     Integrate(#[from] IntegrateError),
+
+    #[error(transparent)]
+    Set(#[from] SetError),
 
     #[error("Error: {0}")]
     Custom(String),
