@@ -1,10 +1,10 @@
 mod builder;
+mod reference;
 
 use rebound_bind as rb;
 
-use crate::simulator::Simulation;
-
 pub use builder::ParticleBuilder;
+pub use reference::ParticleRef;
 
 pub type ParticlePosition = (f64, f64, f64);
 
@@ -36,68 +36,5 @@ impl From<Particle> for rb::reb_particle {
             ap: std::ptr::null_mut(),
             sim: std::ptr::null_mut(),
         }
-    }
-}
-
-pub struct ParticleRef<'a> {
-    pub(crate) inner: *mut rb::reb_particle,
-    pub(crate) _sim: &'a Simulation,
-}
-
-impl<'a> ParticleRef<'a> {
-    pub fn hash(&self) -> Option<u32> {
-        if self.inner.is_null() {
-            return None;
-        }
-
-        unsafe { Some((*self.inner).hash) }
-    }
-
-    pub fn position(&self) -> Option<ParticlePosition> {
-        if self.inner.is_null() {
-            return None;
-        }
-
-        unsafe { Some(((*self.inner).x, (*self.inner).y, (*self.inner).z)) }
-    }
-
-    pub fn velocity(&self) -> Option<ParticlePosition> {
-        if self.inner.is_null() {
-            return None;
-        }
-
-        unsafe { Some(((*self.inner).vx, (*self.inner).vy, (*self.inner).vz)) }
-    }
-
-    pub fn acceleration(&self) -> Option<ParticlePosition> {
-        if self.inner.is_null() {
-            return None;
-        }
-
-        unsafe { Some(((*self.inner).ax, (*self.inner).ay, (*self.inner).az)) }
-    }
-
-    pub fn mass(&self) -> Option<f64> {
-        if self.inner.is_null() {
-            return None;
-        }
-
-        unsafe { Some((*self.inner).m) }
-    }
-
-    pub fn radius(&self) -> Option<f64> {
-        if self.inner.is_null() {
-            return None;
-        }
-
-        unsafe { Some((*self.inner).r) }
-    }
-
-    pub fn last_collision(&self) -> Option<f64> {
-        if self.inner.is_null() {
-            return None;
-        }
-
-        unsafe { Some((*self.inner).last_collision) }
     }
 }
