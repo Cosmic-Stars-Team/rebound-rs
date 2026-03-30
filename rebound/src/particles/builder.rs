@@ -22,6 +22,11 @@ impl ParticleBuilder {
         self
     }
 
+    pub fn set_radius(mut self, radius: f64) -> Self {
+        self.inner.radius = radius;
+        self
+    }
+
     pub fn set_x(mut self, x: f64) -> Self {
         self.inner.position.0 = x;
         self
@@ -85,6 +90,9 @@ macro_rules! create_particle {
     (@set $builder:ident, mass, $value:expr) => {
         $builder.set_mass($value)
     };
+    (@set $builder:ident, radius, $value:expr) => {
+        $builder.set_radius($value)
+    };
     (@set $builder:ident, x, $value:expr) => {
         $builder.set_x($value)
     };
@@ -107,7 +115,7 @@ macro_rules! create_particle {
         compile_error!(concat!(
             "Unsupported field for create_particle!: ",
             stringify!($field),
-            ". supported fields: hash, mass, x, y, z, vx, vy, vz"
+            ". supported fields: hash, mass, radius, x, y, z, vx, vy, vz"
         ));
     };
 }

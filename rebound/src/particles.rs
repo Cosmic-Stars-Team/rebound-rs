@@ -12,8 +12,21 @@ pub type ParticlePosition = (f64, f64, f64);
 pub struct Particle {
     pub hash: u32,
     pub mass: f64,
+    pub radius: f64,
     pub position: ParticlePosition,
     pub velocity: ParticlePosition,
+}
+
+impl From<rb::reb_particle> for Particle {
+    fn from(particle: rb::reb_particle) -> Self {
+        Particle {
+            hash: particle.hash,
+            mass: particle.m,
+            radius: particle.r,
+            position: (particle.x, particle.y, particle.z),
+            velocity: (particle.vx, particle.vy, particle.vz),
+        }
+    }
 }
 
 impl From<Particle> for rb::reb_particle {
@@ -30,7 +43,7 @@ impl From<Particle> for rb::reb_particle {
             ay: 0.0,
             az: 0.0,
             m: particle.mass,
-            r: 0.0,
+            r: particle.radius,
             last_collision: 0.0,
             c: std::ptr::null_mut(),
             ap: std::ptr::null_mut(),
