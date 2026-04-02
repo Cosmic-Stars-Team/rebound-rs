@@ -19,6 +19,12 @@ impl SetError {
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum IntegratorConfigError {
+    #[error("Unknown integrator value.")]
+    UnknownIntegrator,
+}
+
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum IntegrateError {
     #[error("Performing a single step, then switching to PAUSED.")]
     SingleStep,
@@ -58,6 +64,9 @@ pub enum Error {
 
     #[error(transparent)]
     Set(#[from] SetError),
+
+    #[error("Integrator config error: {0}")]
+    IntegratorConfig(#[from] IntegratorConfigError),
 
     #[error("Error: {0}")]
     Custom(String),
