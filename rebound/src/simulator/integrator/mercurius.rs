@@ -35,10 +35,8 @@ macro_rules! _reb_integrator_mercurius_c_fn {
             d: f64,
             dcrit: f64,
         ) -> f64 {
-            let r_safe = unsafe {
-                assert!(!r.is_null(), "Rebound simulation pointer is null!");
-                &*r
-            };
+            // SAFETY: REBOUND invokes this callback with the active simulation pointer.
+            let r_safe = unsafe { &mut *r };
             $safe_fn(r_safe, d, dcrit)
         }
 

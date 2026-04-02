@@ -1,0 +1,91 @@
+use rebound_bind as rb;
+
+use crate::simulator::Simulation;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum Type {
+    Lf = rb::REB_EOS_TYPE_REB_EOS_LF,
+    Lf4 = rb::REB_EOS_TYPE_REB_EOS_LF4,
+    Lf6 = rb::REB_EOS_TYPE_REB_EOS_LF6,
+    Lf8 = rb::REB_EOS_TYPE_REB_EOS_LF8,
+    Lf42 = rb::REB_EOS_TYPE_REB_EOS_LF4_2,
+    Lf864 = rb::REB_EOS_TYPE_REB_EOS_LF8_6_4,
+    Plf764 = rb::REB_EOS_TYPE_REB_EOS_PLF7_6_4,
+    Pmlf4 = rb::REB_EOS_TYPE_REB_EOS_PMLF4,
+    Pmlf6 = rb::REB_EOS_TYPE_REB_EOS_PMLF6,
+}
+
+impl From<Type> for rb::REB_EOS_TYPE {
+    fn from(value: Type) -> Self {
+        value as Self
+    }
+}
+
+impl Type {
+    fn from_raw(value: rb::REB_EOS_TYPE) -> Option<Self> {
+        match value {
+            rb::REB_EOS_TYPE_REB_EOS_LF => Some(Self::Lf),
+            rb::REB_EOS_TYPE_REB_EOS_LF4 => Some(Self::Lf4),
+            rb::REB_EOS_TYPE_REB_EOS_LF6 => Some(Self::Lf6),
+            rb::REB_EOS_TYPE_REB_EOS_LF8 => Some(Self::Lf8),
+            rb::REB_EOS_TYPE_REB_EOS_LF4_2 => Some(Self::Lf42),
+            rb::REB_EOS_TYPE_REB_EOS_LF8_6_4 => Some(Self::Lf864),
+            rb::REB_EOS_TYPE_REB_EOS_PLF7_6_4 => Some(Self::Plf764),
+            rb::REB_EOS_TYPE_REB_EOS_PMLF4 => Some(Self::Pmlf4),
+            rb::REB_EOS_TYPE_REB_EOS_PMLF6 => Some(Self::Pmlf6),
+            _ => None,
+        }
+    }
+}
+
+pub struct IntegratorEos<'a> {
+    pub(crate) inner: *mut rb::reb_integrator_eos,
+    pub(crate) _sim: &'a Simulation,
+}
+
+impl<'a> IntegratorEos<'a> {
+    pub fn set_phi0(self, phi0: Type) -> Self {
+        unsafe {
+            (*self.inner).phi0 = phi0.into();
+        }
+        self
+    }
+
+    pub fn set_phi1(self, phi1: Type) -> Self {
+        unsafe {
+            (*self.inner).phi1 = phi1.into();
+        }
+        self
+    }
+
+    pub fn set_n(self, n: u32) -> Self {
+        unsafe {
+            (*self.inner).n = n;
+        }
+        self
+    }
+
+    pub fn set_safe_mode(self, safe_mode: u32) -> Self {
+        unsafe {
+            (*self.inner).safe_mode = safe_mode;
+        }
+        self
+    }
+
+    pub fn phi0(&self) -> Option<Type> {
+        unsafe { Type::from_raw((*self.inner).phi0) }
+    }
+
+    pub fn phi1(&self) -> Option<Type> {
+        unsafe { Type::from_raw((*self.inner).phi1) }
+    }
+
+    pub fn n(&self) -> u32 {
+        unsafe { (*self.inner).n }
+    }
+
+    pub fn safe_mode(&self) -> u32 {
+        unsafe { (*self.inner).safe_mode }
+    }
+}

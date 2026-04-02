@@ -22,6 +22,12 @@ impl SetError {
 pub enum IntegratorConfigError {
     #[error("Unknown integrator value.")]
     UnknownIntegrator,
+
+    #[error("Field `{field}` is not supported by integrator `{integrator}`.")]
+    UnsupportedField {
+        integrator: &'static str,
+        field: &'static str,
+    },
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
