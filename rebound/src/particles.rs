@@ -3,7 +3,6 @@ mod reference;
 
 use rebound_bind as rb;
 
-pub use builder::ParticleBuilder;
 pub use reference::ParticleRef;
 
 pub type ParticlePosition = (f64, f64, f64);
@@ -15,6 +14,12 @@ pub struct Particle {
     pub radius: f64,
     pub position: ParticlePosition,
     pub velocity: ParticlePosition,
+}
+
+impl Particle {
+    pub fn new() -> Self {
+        Self::default()
+    }
 }
 
 impl From<rb::reb_particle> for Particle {
