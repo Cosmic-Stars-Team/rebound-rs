@@ -3,9 +3,13 @@ use crate::utils;
 use super::Particle;
 
 impl Particle {
-    pub fn set_hash(mut self, hash: &str) -> Self {
-        self.hash = utils::hash(hash);
+    pub fn set_hash(mut self, hash: u32) -> Self {
+        self.hash = hash;
         self
+    }
+
+    pub fn set_hash_by_name(self, hash: &str) -> Self {
+        self.set_hash(utils::hash(hash))
     }
 
     pub fn set_mass(mut self, mass: f64) -> Self {
@@ -59,6 +63,45 @@ impl Particle {
     }
 }
 
+#[allow(dead_code)]
+#[doc(hidden)]
+pub trait ParticleHashInput {
+    fn apply_hash(self, particle: Particle) -> Particle;
+}
+
+impl ParticleHashInput for u32 {
+    fn apply_hash(self, particle: Particle) -> Particle {
+        particle.set_hash(self)
+    }
+}
+
+impl ParticleHashInput for &str {
+    fn apply_hash(self, particle: Particle) -> Particle {
+        particle.set_hash_by_name(self)
+    }
+}
+
+impl ParticleHashInput for String {
+    fn apply_hash(self, particle: Particle) -> Particle {
+        particle.set_hash_by_name(&self)
+    }
+}
+
+impl ParticleHashInput for &String {
+    fn apply_hash(self, particle: Particle) -> Particle {
+        particle.set_hash_by_name(self)
+    }
+}
+
+#[allow(dead_code)]
+#[doc(hidden)]
+pub fn _set_particle_hash<T>(particle: Particle, value: T) -> Particle
+where
+    T: ParticleHashInput,
+{
+    value.apply_hash(particle)
+}
+
 #[macro_export]
 macro_rules! create_particle {
     ($($field:ident : $value:expr),* $(,)?) => {{
@@ -70,7 +113,7 @@ macro_rules! create_particle {
     }};
 
     (@set $particle:ident, hash, $value:expr) => {
-        $particle.set_hash($value)
+        $crate::particles::_set_particle_hash($particle, $value)
     };
     (@set $particle:ident, mass, $value:expr) => {
         $particle.set_mass($value)

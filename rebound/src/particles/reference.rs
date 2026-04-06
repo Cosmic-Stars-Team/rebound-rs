@@ -2,6 +2,7 @@ use rebound_bind as rb;
 
 use crate::{
     particles::{Particle, ParticlePosition},
+    utils,
     simulator::Simulation,
 };
 
@@ -18,6 +19,10 @@ impl<'a> ParticleRef<'a> {
     pub fn set_hash(&mut self, hash: u32) -> Option<()> {
         self.particle_mut()?.hash = hash;
         Some(())
+    }
+
+    pub fn set_hash_by_name(&mut self, hash: &str) -> Option<()> {
+        self.set_hash(utils::hash(hash))
     }
 
     pub fn position(&self) -> Option<ParticlePosition> {
