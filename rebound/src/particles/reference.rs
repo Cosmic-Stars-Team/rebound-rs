@@ -2,8 +2,8 @@ use rebound_bind as rb;
 
 use crate::{
     particles::{Particle, ParticlePosition},
-    utils,
     simulator::Simulation,
+    utils,
 };
 
 pub struct ParticleRef<'a> {

@@ -1,4 +1,7 @@
-use crate::particles::ParticleRef;
+use crate::{
+    particles::{Particle, ParticleRef},
+    utils,
+};
 
 use super::Simulation;
 use rebound_bind as rb;
@@ -35,5 +38,20 @@ impl Simulation {
             inner: particle,
             _sim: self,
         })
+    }
+
+    pub fn get_particle_by_hash_name(&self, name: &str) -> Option<ParticleRef<'_>> {
+        let hash = utils::hash(name);
+        self.get_particle_by_hash(hash)
+    }
+
+    pub fn com(&self) -> Particle {
+        let com = unsafe { rb::reb_simulation_com(self.inner) };
+        com.into()
+    }
+
+    pub fn com_range(&self, first: i32, last: i32) -> Particle {
+        let com = unsafe { rb::reb_simulation_com_range(self.inner, first, last) };
+        com.into()
     }
 }
