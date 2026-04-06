@@ -1,5 +1,13 @@
 use std::env;
+use std::error::Error;
+use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
+
+use flate2::read::GzDecoder;
+use reqwest::blocking::Client;
+use tar::Archive;
+use tempfile::Builder;
 
 const SOURCES: &[&str] = &[
     "rebound.c",
@@ -78,13 +86,104 @@ fn find_libomp_prefix() -> Option<PathBuf> {
         .map(Path::to_path_buf)
 }
 
-fn main() {
-    let manifest_dir =
-        PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"));
-    let c_src_dir = manifest_dir.join("c_src").join("src");
+fn vendored_source_matches(target_dir: &Path, version: &str) -> bool {
+    let src_dir = target_dir.join("src");
+    let license_file = target_dir.join("LICENSE");
+    let version_file = target_dir.join(".version");
+
+    src_dir.is_dir()
+        && license_file.is_file()
+        && version_file.is_file()
+        && fs::read_to_string(version_file)
+            .map(|current| current.trim() == version)
+            .unwrap_or(false)
+}
+
+fn vendor(manifest_dir: &Path, version: &str) -> Result<(), Box<dyn Error>> {
+    let target_dir = manifest_dir.join("c_src");
+    if vendored_source_matches(&target_dir, version) {
+        return Ok(());
+    }
+
+    let url = format!("https://github.com/hannorein/rebound/archive/refs/tags/{version}.tar.gz");
+    println!("cargo:warning=Vendoring REBOUND v{version} from {url}");
+
+    let client = Client::builder()
+        .timeout(Duration::from_secs(300))
+        .build()?;
+    let response = client
+        .get(&url)
+        .header("user-agent", "rebound-bind-build-script")
+        .send()?
+        .error_for_status()?;
+
+    let extract_dir = Builder::new()
+        .prefix("rebound-extract-")
+        .tempdir_in(manifest_dir)?;
+    let stage_dir = Builder::new()
+        .prefix("c_src-stage-")
+        .tempdir_in(manifest_dir)?;
+
+    let decoder = GzDecoder::new(response);
+    let mut archive = Archive::new(decoder);
+    archive.unpack(extract_dir.path())?;
+
+    let archive_root = extract_dir.path().join(format!("rebound-{version}"));
+    let source_src_dir = archive_root.join("src");
+    let source_license_file = archive_root.join("LICENSE");
+    if !source_src_dir.is_dir() {
+        return Err(format!(
+            "downloaded archive for REBOUND v{version} is missing src/: {}",
+            source_src_dir.display()
+        )
+        .into());
+    }
+    if !source_license_file.is_file() {
+        return Err(format!(
+            "downloaded archive for REBOUND v{version} is missing LICENSE: {}",
+            source_license_file.display()
+        )
+        .into());
+    }
+
+    fs::rename(&source_src_dir, stage_dir.path().join("src"))?;
+    fs::rename(&source_license_file, stage_dir.path().join("LICENSE"))?;
+    fs::write(stage_dir.path().join(".version"), format!("{version}\n"))?;
+
+    let backup_dir = if target_dir.exists() {
+        let backup_dir = Builder::new()
+            .prefix("c_src-backup-")
+            .tempdir_in(manifest_dir)?;
+        fs::rename(&target_dir, backup_dir.path().join("c_src"))?;
+        Some(backup_dir)
+    } else {
+        None
+    };
+
+    if let Err(error) = fs::rename(stage_dir.path(), &target_dir) {
+        if let Some(backup_dir) = backup_dir.as_ref() {
+            let backup_target = backup_dir.path().join("c_src");
+            if backup_target.exists() {
+                let _ = fs::rename(backup_target, &target_dir);
+            }
+        }
+        return Err(error.into());
+    }
+
+    std::mem::forget(stage_dir);
+    Ok(())
+}
+
+fn build(manifest_dir: &Path, version: &str) {
+    let vendor_dir = manifest_dir.join("c_src");
+    let c_src_dir = vendor_dir.join("src");
     let rebound_header = c_src_dir.join("rebound.h");
 
-    println!("cargo:rerun-if-changed={}", c_src_dir.display());
+    println!("cargo:rerun-if-changed={}", vendor_dir.display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        vendor_dir.join(".version").display()
+    );
     println!("cargo:rerun-if-env-changed=CARGO_PKG_VERSION");
     println!("cargo:rerun-if-env-changed=OPENGL");
     println!("cargo:rerun-if-env-changed=OPENMP");
@@ -132,26 +231,25 @@ fn main() {
         }
     }
 
-    let version = rebound_version();
-    let mut build = cc::Build::new();
-    build.include(&c_src_dir);
+    let mut cc_build = cc::Build::new();
+    cc_build.include(&c_src_dir);
 
     for source in SOURCES {
-        build.file(c_src_dir.join(source));
+        cc_build.file(c_src_dir.join(source));
     }
 
-    build.define("_GNU_SOURCE", None);
-    build.define("GITHASH", Some(version.as_str()));
+    cc_build.define("_GNU_SOURCE", None);
+    cc_build.define("GITHASH", Some(version));
 
     if is_windows {
-        build.flag_if_supported("/Ox");
-        build.flag_if_supported("/fp:precise");
+        cc_build.flag_if_supported("/Ox");
+        cc_build.flag_if_supported("/fp:precise");
     } else {
-        build.flag_if_supported("-std=c99");
-        build.flag_if_supported("-Wpointer-arith");
-        build.flag_if_supported("-fPIC");
-        build.flag_if_supported("-Wall");
-        build.flag_if_supported("-g");
+        cc_build.flag_if_supported("-std=c99");
+        cc_build.flag_if_supported("-Wpointer-arith");
+        cc_build.flag_if_supported("-fPIC");
+        cc_build.flag_if_supported("-Wall");
+        cc_build.flag_if_supported("-g");
     }
 
     if is_linux {
@@ -159,8 +257,8 @@ fn main() {
         println!("cargo:rustc-link-lib=rt");
     }
     if is_macos {
-        build.define("_APPLE", None);
-        build.include("/usr/local/include");
+        cc_build.define("_APPLE", None);
+        cc_build.include("/usr/local/include");
         println!("cargo:rustc-link-search=native=/usr/local/lib");
     }
 
@@ -168,25 +266,25 @@ fn main() {
 
     if mpi {
         if env::var_os("CC").is_none() {
-            build.compiler("mpicc");
+            cc_build.compiler("mpicc");
         }
-        build.define("MPI", None);
+        cc_build.define("MPI", None);
         bindgen_defines.push("MPI".to_owned());
     }
     if fftw {
-        build.define("FFTW", None);
+        cc_build.define("FFTW", None);
         bindgen_defines.push("FFTW".to_owned());
         println!("cargo:rustc-link-lib=fftw3");
     }
     if server {
-        build.define("SERVER", None);
+        cc_build.define("SERVER", None);
         bindgen_defines.push("SERVER".to_owned());
     }
     if opengl {
-        build.define("OPENGL", None);
+        cc_build.define("OPENGL", None);
         bindgen_defines.push("OPENGL".to_owned());
         if is_macos {
-            build.include("/opt/homebrew/include");
+            cc_build.include("/opt/homebrew/include");
             println!("cargo:rustc-link-search=native=/opt/homebrew/lib");
             println!("cargo:rustc-link-lib=glfw");
             println!("cargo:rustc-link-lib=framework=Cocoa");
@@ -198,38 +296,38 @@ fn main() {
         }
     }
     if avx512 {
-        build.define("AVX512", None);
+        cc_build.define("AVX512", None);
         bindgen_defines.push("AVX512".to_owned());
     }
     if quadrupole {
-        build.define("QUADRUPOLE", None);
+        cc_build.define("QUADRUPOLE", None);
         bindgen_defines.push("QUADRUPOLE".to_owned());
     }
     if profiling {
-        build.define("PROFILING", None);
+        cc_build.define("PROFILING", None);
         bindgen_defines.push("PROFILING".to_owned());
     }
 
     if openmp {
-        build.define("OPENMP", None);
+        cc_build.define("OPENMP", None);
         bindgen_defines.push("OPENMP".to_owned());
         if env::var("CC").ok().as_deref() == Some("icc") {
-            build.flag_if_supported("-openmp");
+            cc_build.flag_if_supported("-openmp");
             println!("cargo:rustc-link-arg=-openmp");
         } else {
-            build.flag_if_supported("-fopenmp");
+            cc_build.flag_if_supported("-fopenmp");
             println!("cargo:rustc-link-arg=-fopenmp");
         }
     } else if openmp_clang {
-        build.define("OPENMP", None);
+        cc_build.define("OPENMP", None);
         bindgen_defines.push("OPENMP".to_owned());
-        build.flag_if_supported("-Xpreprocessor");
-        build.flag_if_supported("-fopenmp");
+        cc_build.flag_if_supported("-Xpreprocessor");
+        cc_build.flag_if_supported("-fopenmp");
         if let Some(prefix) = find_libomp_prefix() {
             let include_dir = prefix.join("include");
             let lib_dir = prefix.join("lib");
             if include_dir.exists() {
-                build.include(include_dir);
+                cc_build.include(include_dir);
             }
             if lib_dir.exists() {
                 println!("cargo:rustc-link-search=native={}", lib_dir.display());
@@ -241,10 +339,10 @@ fn main() {
         }
         println!("cargo:rustc-link-lib=omp");
     } else if !is_windows {
-        build.flag_if_supported("-Wno-unknown-pragmas");
+        cc_build.flag_if_supported("-Wno-unknown-pragmas");
     }
 
-    build.compile("rebound");
+    cc_build.compile("rebound");
 
     let mut bindgen_builder = bindgen::Builder::default()
         .header(rebound_header.display().to_string())
@@ -276,4 +374,15 @@ fn main() {
     bindings
         .write_to_file(out_path)
         .expect("Couldn't write bindings!");
+}
+
+fn main() {
+    let manifest_dir =
+        PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"));
+    let version = rebound_version();
+
+    vendor(&manifest_dir, &version).unwrap_or_else(|error| {
+        panic!("failed to vendor REBOUND v{version}: {error}");
+    });
+    build(&manifest_dir, &version);
 }
