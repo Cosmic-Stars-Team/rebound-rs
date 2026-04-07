@@ -3,22 +3,31 @@ use rebound_bind as rb;
 use crate::simulator::Simulation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Type {
-    Lf = rb::REB_EOS_TYPE_REB_EOS_LF,
-    Lf4 = rb::REB_EOS_TYPE_REB_EOS_LF4,
-    Lf6 = rb::REB_EOS_TYPE_REB_EOS_LF6,
-    Lf8 = rb::REB_EOS_TYPE_REB_EOS_LF8,
-    Lf42 = rb::REB_EOS_TYPE_REB_EOS_LF4_2,
-    Lf864 = rb::REB_EOS_TYPE_REB_EOS_LF8_6_4,
-    Plf764 = rb::REB_EOS_TYPE_REB_EOS_PLF7_6_4,
-    Pmlf4 = rb::REB_EOS_TYPE_REB_EOS_PMLF4,
-    Pmlf6 = rb::REB_EOS_TYPE_REB_EOS_PMLF6,
+    Lf = rb::REB_EOS_TYPE_REB_EOS_LF as isize,
+    Lf4 = rb::REB_EOS_TYPE_REB_EOS_LF4 as isize,
+    Lf6 = rb::REB_EOS_TYPE_REB_EOS_LF6 as isize,
+    Lf8 = rb::REB_EOS_TYPE_REB_EOS_LF8 as isize,
+    Lf42 = rb::REB_EOS_TYPE_REB_EOS_LF4_2 as isize,
+    Lf864 = rb::REB_EOS_TYPE_REB_EOS_LF8_6_4 as isize,
+    Plf764 = rb::REB_EOS_TYPE_REB_EOS_PLF7_6_4 as isize,
+    Pmlf4 = rb::REB_EOS_TYPE_REB_EOS_PMLF4 as isize,
+    Pmlf6 = rb::REB_EOS_TYPE_REB_EOS_PMLF6 as isize,
 }
 
 impl From<Type> for rb::REB_EOS_TYPE {
     fn from(value: Type) -> Self {
-        value as Self
+        match value {
+            Type::Lf => rb::REB_EOS_TYPE_REB_EOS_LF,
+            Type::Lf4 => rb::REB_EOS_TYPE_REB_EOS_LF4,
+            Type::Lf6 => rb::REB_EOS_TYPE_REB_EOS_LF6,
+            Type::Lf8 => rb::REB_EOS_TYPE_REB_EOS_LF8,
+            Type::Lf42 => rb::REB_EOS_TYPE_REB_EOS_LF4_2,
+            Type::Lf864 => rb::REB_EOS_TYPE_REB_EOS_LF8_6_4,
+            Type::Plf764 => rb::REB_EOS_TYPE_REB_EOS_PLF7_6_4,
+            Type::Pmlf4 => rb::REB_EOS_TYPE_REB_EOS_PMLF4,
+            Type::Pmlf6 => rb::REB_EOS_TYPE_REB_EOS_PMLF6,
+        }
     }
 }
 

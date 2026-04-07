@@ -3,17 +3,21 @@ use rebound_bind as rb;
 use crate::simulator::Simulation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum AdaptiveMode {
-    Individual = rb::reb_integrator_ias15_REB_IAS15_INDIVIDUAL,
-    Global = rb::reb_integrator_ias15_REB_IAS15_GLOBAL,
-    Prs23 = rb::reb_integrator_ias15_REB_IAS15_PRS23,
-    Aarseth85 = rb::reb_integrator_ias15_REB_IAS15_AARSETH85,
+    Individual = rb::reb_integrator_ias15_REB_IAS15_INDIVIDUAL as isize,
+    Global = rb::reb_integrator_ias15_REB_IAS15_GLOBAL as isize,
+    Prs23 = rb::reb_integrator_ias15_REB_IAS15_PRS23 as isize,
+    Aarseth85 = rb::reb_integrator_ias15_REB_IAS15_AARSETH85 as isize,
 }
 
 impl From<AdaptiveMode> for rb::reb_integrator_ias15__bindgen_ty_1 {
     fn from(value: AdaptiveMode) -> Self {
-        value as Self
+        match value {
+            AdaptiveMode::Individual => rb::reb_integrator_ias15_REB_IAS15_INDIVIDUAL,
+            AdaptiveMode::Global => rb::reb_integrator_ias15_REB_IAS15_GLOBAL,
+            AdaptiveMode::Prs23 => rb::reb_integrator_ias15_REB_IAS15_PRS23,
+            AdaptiveMode::Aarseth85 => rb::reb_integrator_ias15_REB_IAS15_AARSETH85,
+        }
     }
 }
 

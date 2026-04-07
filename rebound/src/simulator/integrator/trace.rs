@@ -37,16 +37,19 @@ impl From<SPeri> for Option<unsafe extern "C" fn(r: *mut rb::reb_simulation, j: 
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum PeriMode {
-    PartialBs = rb::reb_integrator_trace_REB_TRACE_PERI_PARTIAL_BS,
-    FullBs = rb::reb_integrator_trace_REB_TRACE_PERI_FULL_BS,
-    FullIas15 = rb::reb_integrator_trace_REB_TRACE_PERI_FULL_IAS15,
+    PartialBs = rb::reb_integrator_trace_REB_TRACE_PERI_PARTIAL_BS as isize,
+    FullBs = rb::reb_integrator_trace_REB_TRACE_PERI_FULL_BS as isize,
+    FullIas15 = rb::reb_integrator_trace_REB_TRACE_PERI_FULL_IAS15 as isize,
 }
 
 impl From<PeriMode> for rb::reb_integrator_trace__bindgen_ty_1 {
     fn from(value: PeriMode) -> Self {
-        value as Self
+        match value {
+            PeriMode::PartialBs => rb::reb_integrator_trace_REB_TRACE_PERI_PARTIAL_BS,
+            PeriMode::FullBs => rb::reb_integrator_trace_REB_TRACE_PERI_FULL_BS,
+            PeriMode::FullIas15 => rb::reb_integrator_trace_REB_TRACE_PERI_FULL_IAS15,
+        }
     }
 }
 

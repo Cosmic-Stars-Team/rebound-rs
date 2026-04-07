@@ -24,25 +24,37 @@ use crate::{
 use rebound_bind as rb;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Integrator {
-    Ias15 = rb::reb_simulation_REB_INTEGRATOR_IAS15,
-    Whfast = rb::reb_simulation_REB_INTEGRATOR_WHFAST,
-    Sei = rb::reb_simulation_REB_INTEGRATOR_SEI,
-    Leapfrog = rb::reb_simulation_REB_INTEGRATOR_LEAPFROG,
-    None = rb::reb_simulation_REB_INTEGRATOR_NONE,
-    Janus = rb::reb_simulation_REB_INTEGRATOR_JANUS,
-    Mercurius = rb::reb_simulation_REB_INTEGRATOR_MERCURIUS,
-    Saba = rb::reb_simulation_REB_INTEGRATOR_SABA,
-    Eos = rb::reb_simulation_REB_INTEGRATOR_EOS,
-    Bs = rb::reb_simulation_REB_INTEGRATOR_BS,
-    Whfast512 = rb::reb_simulation_REB_INTEGRATOR_WHFAST512,
-    Trace = rb::reb_simulation_REB_INTEGRATOR_TRACE,
+    Ias15 = rb::reb_simulation_REB_INTEGRATOR_IAS15 as isize,
+    Whfast = rb::reb_simulation_REB_INTEGRATOR_WHFAST as isize,
+    Sei = rb::reb_simulation_REB_INTEGRATOR_SEI as isize,
+    Leapfrog = rb::reb_simulation_REB_INTEGRATOR_LEAPFROG as isize,
+    None = rb::reb_simulation_REB_INTEGRATOR_NONE as isize,
+    Janus = rb::reb_simulation_REB_INTEGRATOR_JANUS as isize,
+    Mercurius = rb::reb_simulation_REB_INTEGRATOR_MERCURIUS as isize,
+    Saba = rb::reb_simulation_REB_INTEGRATOR_SABA as isize,
+    Eos = rb::reb_simulation_REB_INTEGRATOR_EOS as isize,
+    Bs = rb::reb_simulation_REB_INTEGRATOR_BS as isize,
+    Whfast512 = rb::reb_simulation_REB_INTEGRATOR_WHFAST512 as isize,
+    Trace = rb::reb_simulation_REB_INTEGRATOR_TRACE as isize,
 }
 
 impl From<Integrator> for rb::reb_simulation__bindgen_ty_2 {
     fn from(value: Integrator) -> Self {
-        value as Self
+        match value {
+            Integrator::Ias15 => rb::reb_simulation_REB_INTEGRATOR_IAS15,
+            Integrator::Whfast => rb::reb_simulation_REB_INTEGRATOR_WHFAST,
+            Integrator::Sei => rb::reb_simulation_REB_INTEGRATOR_SEI,
+            Integrator::Leapfrog => rb::reb_simulation_REB_INTEGRATOR_LEAPFROG,
+            Integrator::None => rb::reb_simulation_REB_INTEGRATOR_NONE,
+            Integrator::Janus => rb::reb_simulation_REB_INTEGRATOR_JANUS,
+            Integrator::Mercurius => rb::reb_simulation_REB_INTEGRATOR_MERCURIUS,
+            Integrator::Saba => rb::reb_simulation_REB_INTEGRATOR_SABA,
+            Integrator::Eos => rb::reb_simulation_REB_INTEGRATOR_EOS,
+            Integrator::Bs => rb::reb_simulation_REB_INTEGRATOR_BS,
+            Integrator::Whfast512 => rb::reb_simulation_REB_INTEGRATOR_WHFAST512,
+            Integrator::Trace => rb::reb_simulation_REB_INTEGRATOR_TRACE,
+        }
     }
 }
 
@@ -597,6 +609,18 @@ pub use _reb_simulation_set_integrator_config as set_integrator_config;
 mod tests {
     use super::{Integrator, Simulation, set_integrator_config};
     use crate::error::{Error, IntegratorConfigError};
+    use rebound_bind as rb;
+
+    #[test]
+    fn integrator_roundtrip_uses_bindgen_raw_type() {
+        let sim = Simulation::new().set_integrator(Integrator::Trace);
+
+        assert_eq!(sim.integrator(), Some(Integrator::Trace));
+        assert_eq!(
+            rb::reb_simulation__bindgen_ty_2::from(Integrator::Trace),
+            rb::reb_simulation_REB_INTEGRATOR_TRACE
+        );
+    }
 
     #[test]
     fn sei_direct_config_roundtrip() {

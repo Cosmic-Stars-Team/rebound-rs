@@ -3,17 +3,21 @@ use rebound_bind as rb;
 use crate::simulator::Simulation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Kernel {
-    Default = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_DEFAULT,
-    ModifiedKick = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_MODIFIEDKICK,
-    Composition = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_COMPOSITION,
-    Lazy = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_LAZY,
+    Default = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_DEFAULT as isize,
+    ModifiedKick = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_MODIFIEDKICK as isize,
+    Composition = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_COMPOSITION as isize,
+    Lazy = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_LAZY as isize,
 }
 
 impl From<Kernel> for rb::reb_integrator_whfast__bindgen_ty_1 {
     fn from(value: Kernel) -> Self {
-        value as Self
+        match value {
+            Kernel::Default => rb::reb_integrator_whfast_REB_WHFAST_KERNEL_DEFAULT,
+            Kernel::ModifiedKick => rb::reb_integrator_whfast_REB_WHFAST_KERNEL_MODIFIEDKICK,
+            Kernel::Composition => rb::reb_integrator_whfast_REB_WHFAST_KERNEL_COMPOSITION,
+            Kernel::Lazy => rb::reb_integrator_whfast_REB_WHFAST_KERNEL_LAZY,
+        }
     }
 }
 
@@ -30,18 +34,26 @@ impl Kernel {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Coordinates {
-    Jacobi = rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_JACOBI,
+    Jacobi = rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_JACOBI as isize,
     DemocraticHeliocentric =
-        rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC,
-    Whds = rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_WHDS,
-    Barycentric = rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_BARYCENTRIC,
+        rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC as isize,
+    Whds = rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_WHDS as isize,
+    Barycentric = rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_BARYCENTRIC as isize,
 }
 
 impl From<Coordinates> for rb::reb_integrator_whfast__bindgen_ty_2 {
     fn from(value: Coordinates) -> Self {
-        value as Self
+        match value {
+            Coordinates::Jacobi => rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_JACOBI,
+            Coordinates::DemocraticHeliocentric => {
+                rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_DEMOCRATICHELIOCENTRIC
+            }
+            Coordinates::Whds => rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_WHDS,
+            Coordinates::Barycentric => {
+                rb::reb_integrator_whfast_REB_WHFAST_COORDINATES_BARYCENTRIC
+            }
+        }
     }
 }
 

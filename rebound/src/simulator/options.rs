@@ -6,18 +6,23 @@ use rebound_bind as rb;
 // TODO: Confirm that the verification boundaries are accurate.
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Collision {
-    None = rb::reb_simulation_REB_COLLISION_NONE,
-    Direct = rb::reb_simulation_REB_COLLISION_DIRECT,
-    Tree = rb::reb_simulation_REB_COLLISION_TREE,
-    Line = rb::reb_simulation_REB_COLLISION_LINE,
-    LineTree = rb::reb_simulation_REB_COLLISION_LINETREE,
+    None = rb::reb_simulation_REB_COLLISION_NONE as isize,
+    Direct = rb::reb_simulation_REB_COLLISION_DIRECT as isize,
+    Tree = rb::reb_simulation_REB_COLLISION_TREE as isize,
+    Line = rb::reb_simulation_REB_COLLISION_LINE as isize,
+    LineTree = rb::reb_simulation_REB_COLLISION_LINETREE as isize,
 }
 
 impl From<Collision> for rb::reb_simulation__bindgen_ty_1 {
     fn from(value: Collision) -> Self {
-        value as Self
+        match value {
+            Collision::None => rb::reb_simulation_REB_COLLISION_NONE,
+            Collision::Direct => rb::reb_simulation_REB_COLLISION_DIRECT,
+            Collision::Tree => rb::reb_simulation_REB_COLLISION_TREE,
+            Collision::Line => rb::reb_simulation_REB_COLLISION_LINE,
+            Collision::LineTree => rb::reb_simulation_REB_COLLISION_LINETREE,
+        }
     }
 }
 
@@ -35,17 +40,21 @@ impl Collision {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Boundary {
-    None = rb::reb_simulation_REB_BOUNDARY_NONE,
-    Open = rb::reb_simulation_REB_BOUNDARY_OPEN,
-    Periodic = rb::reb_simulation_REB_BOUNDARY_PERIODIC,
-    Shear = rb::reb_simulation_REB_BOUNDARY_SHEAR,
+    None = rb::reb_simulation_REB_BOUNDARY_NONE as isize,
+    Open = rb::reb_simulation_REB_BOUNDARY_OPEN as isize,
+    Periodic = rb::reb_simulation_REB_BOUNDARY_PERIODIC as isize,
+    Shear = rb::reb_simulation_REB_BOUNDARY_SHEAR as isize,
 }
 
 impl From<Boundary> for rb::reb_simulation__bindgen_ty_3 {
     fn from(value: Boundary) -> Self {
-        value as Self
+        match value {
+            Boundary::None => rb::reb_simulation_REB_BOUNDARY_NONE,
+            Boundary::Open => rb::reb_simulation_REB_BOUNDARY_OPEN,
+            Boundary::Periodic => rb::reb_simulation_REB_BOUNDARY_PERIODIC,
+            Boundary::Shear => rb::reb_simulation_REB_BOUNDARY_SHEAR,
+        }
     }
 }
 
@@ -62,20 +71,27 @@ impl Boundary {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Gravity {
-    None = rb::reb_simulation_REB_GRAVITY_NONE,
-    Basic = rb::reb_simulation_REB_GRAVITY_BASIC,
-    Compensated = rb::reb_simulation_REB_GRAVITY_COMPENSATED,
-    Tree = rb::reb_simulation_REB_GRAVITY_TREE,
-    Mercurius = rb::reb_simulation_REB_GRAVITY_MERCURIUS,
-    Jacobi = rb::reb_simulation_REB_GRAVITY_JACOBI,
-    Trace = rb::reb_simulation_REB_GRAVITY_TRACE,
+    None = rb::reb_simulation_REB_GRAVITY_NONE as isize,
+    Basic = rb::reb_simulation_REB_GRAVITY_BASIC as isize,
+    Compensated = rb::reb_simulation_REB_GRAVITY_COMPENSATED as isize,
+    Tree = rb::reb_simulation_REB_GRAVITY_TREE as isize,
+    Mercurius = rb::reb_simulation_REB_GRAVITY_MERCURIUS as isize,
+    Jacobi = rb::reb_simulation_REB_GRAVITY_JACOBI as isize,
+    Trace = rb::reb_simulation_REB_GRAVITY_TRACE as isize,
 }
 
 impl From<Gravity> for rb::reb_simulation__bindgen_ty_4 {
     fn from(value: Gravity) -> Self {
-        value as Self
+        match value {
+            Gravity::None => rb::reb_simulation_REB_GRAVITY_NONE,
+            Gravity::Basic => rb::reb_simulation_REB_GRAVITY_BASIC,
+            Gravity::Compensated => rb::reb_simulation_REB_GRAVITY_COMPENSATED,
+            Gravity::Tree => rb::reb_simulation_REB_GRAVITY_TREE,
+            Gravity::Mercurius => rb::reb_simulation_REB_GRAVITY_MERCURIUS,
+            Gravity::Jacobi => rb::reb_simulation_REB_GRAVITY_JACOBI,
+            Gravity::Trace => rb::reb_simulation_REB_GRAVITY_TRACE,
+        }
     }
 }
 
@@ -486,5 +502,36 @@ impl Simulation {
             (*self.inner).rand_seed = rand_seed;
         }
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Boundary, Collision, Gravity, Simulation};
+    use rebound_bind as rb;
+
+    #[test]
+    fn simulation_option_roundtrips_use_raw_bindgen_types() {
+        let sim = Simulation::new()
+            .set_boundary(Boundary::Periodic)
+            .set_gravity(Gravity::Trace)
+            .set_collision(Collision::LineTree);
+
+        assert_eq!(sim.boundary(), Some(Boundary::Periodic));
+        assert_eq!(sim.gravity(), Some(Gravity::Trace));
+        assert_eq!(sim.collision(), Some(Collision::LineTree));
+
+        assert_eq!(
+            rb::reb_simulation__bindgen_ty_3::from(Boundary::Periodic),
+            rb::reb_simulation_REB_BOUNDARY_PERIODIC
+        );
+        assert_eq!(
+            rb::reb_simulation__bindgen_ty_4::from(Gravity::Trace),
+            rb::reb_simulation_REB_GRAVITY_TRACE
+        );
+        assert_eq!(
+            rb::reb_simulation__bindgen_ty_1::from(Collision::LineTree),
+            rb::reb_simulation_REB_COLLISION_LINETREE
+        );
     }
 }

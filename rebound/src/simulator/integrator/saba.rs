@@ -3,31 +3,49 @@ use rebound_bind as rb;
 use crate::simulator::Simulation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
 pub enum Type {
-    Wh = rb::reb_integrator_saba_REB_SABA_1,
-    Saba2 = rb::reb_integrator_saba_REB_SABA_2,
-    Saba3 = rb::reb_integrator_saba_REB_SABA_3,
-    Saba4 = rb::reb_integrator_saba_REB_SABA_4,
-    SabaCm1 = rb::reb_integrator_saba_REB_SABA_CM_1,
-    SabaCm2 = rb::reb_integrator_saba_REB_SABA_CM_2,
-    SabaCm3 = rb::reb_integrator_saba_REB_SABA_CM_3,
-    SabaCm4 = rb::reb_integrator_saba_REB_SABA_CM_4,
-    SabaCl1 = rb::reb_integrator_saba_REB_SABA_CL_1,
-    SabaCl2 = rb::reb_integrator_saba_REB_SABA_CL_2,
-    SabaCl3 = rb::reb_integrator_saba_REB_SABA_CL_3,
-    SabaCl4 = rb::reb_integrator_saba_REB_SABA_CL_4,
-    Saba104 = rb::reb_integrator_saba_REB_SABA_10_4,
-    Saba864 = rb::reb_integrator_saba_REB_SABA_8_6_4,
-    Saba1064 = rb::reb_integrator_saba_REB_SABA_10_6_4,
-    SabaH844 = rb::reb_integrator_saba_REB_SABA_H_8_4_4,
-    SabaH864 = rb::reb_integrator_saba_REB_SABA_H_8_6_4,
-    SabaH1064 = rb::reb_integrator_saba_REB_SABA_H_10_6_4,
+    Wh = rb::reb_integrator_saba_REB_SABA_1 as isize,
+    Saba2 = rb::reb_integrator_saba_REB_SABA_2 as isize,
+    Saba3 = rb::reb_integrator_saba_REB_SABA_3 as isize,
+    Saba4 = rb::reb_integrator_saba_REB_SABA_4 as isize,
+    SabaCm1 = rb::reb_integrator_saba_REB_SABA_CM_1 as isize,
+    SabaCm2 = rb::reb_integrator_saba_REB_SABA_CM_2 as isize,
+    SabaCm3 = rb::reb_integrator_saba_REB_SABA_CM_3 as isize,
+    SabaCm4 = rb::reb_integrator_saba_REB_SABA_CM_4 as isize,
+    SabaCl1 = rb::reb_integrator_saba_REB_SABA_CL_1 as isize,
+    SabaCl2 = rb::reb_integrator_saba_REB_SABA_CL_2 as isize,
+    SabaCl3 = rb::reb_integrator_saba_REB_SABA_CL_3 as isize,
+    SabaCl4 = rb::reb_integrator_saba_REB_SABA_CL_4 as isize,
+    Saba104 = rb::reb_integrator_saba_REB_SABA_10_4 as isize,
+    Saba864 = rb::reb_integrator_saba_REB_SABA_8_6_4 as isize,
+    Saba1064 = rb::reb_integrator_saba_REB_SABA_10_6_4 as isize,
+    SabaH844 = rb::reb_integrator_saba_REB_SABA_H_8_4_4 as isize,
+    SabaH864 = rb::reb_integrator_saba_REB_SABA_H_8_6_4 as isize,
+    SabaH1064 = rb::reb_integrator_saba_REB_SABA_H_10_6_4 as isize,
 }
 
 impl From<Type> for rb::reb_integrator_saba__bindgen_ty_1 {
     fn from(value: Type) -> Self {
-        value as Self
+        match value {
+            Type::Wh => rb::reb_integrator_saba_REB_SABA_1,
+            Type::Saba2 => rb::reb_integrator_saba_REB_SABA_2,
+            Type::Saba3 => rb::reb_integrator_saba_REB_SABA_3,
+            Type::Saba4 => rb::reb_integrator_saba_REB_SABA_4,
+            Type::SabaCm1 => rb::reb_integrator_saba_REB_SABA_CM_1,
+            Type::SabaCm2 => rb::reb_integrator_saba_REB_SABA_CM_2,
+            Type::SabaCm3 => rb::reb_integrator_saba_REB_SABA_CM_3,
+            Type::SabaCm4 => rb::reb_integrator_saba_REB_SABA_CM_4,
+            Type::SabaCl1 => rb::reb_integrator_saba_REB_SABA_CL_1,
+            Type::SabaCl2 => rb::reb_integrator_saba_REB_SABA_CL_2,
+            Type::SabaCl3 => rb::reb_integrator_saba_REB_SABA_CL_3,
+            Type::SabaCl4 => rb::reb_integrator_saba_REB_SABA_CL_4,
+            Type::Saba104 => rb::reb_integrator_saba_REB_SABA_10_4,
+            Type::Saba864 => rb::reb_integrator_saba_REB_SABA_8_6_4,
+            Type::Saba1064 => rb::reb_integrator_saba_REB_SABA_10_6_4,
+            Type::SabaH844 => rb::reb_integrator_saba_REB_SABA_H_8_4_4,
+            Type::SabaH864 => rb::reb_integrator_saba_REB_SABA_H_8_6_4,
+            Type::SabaH1064 => rb::reb_integrator_saba_REB_SABA_H_10_6_4,
+        }
     }
 }
 
