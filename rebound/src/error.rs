@@ -64,6 +64,55 @@ pub enum IntegrateError {
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum OrbitalElementsError {
+    #[error("A primary particle is required. Set `primary` explicitly or provide a simulation.")]
+    MissingPrimary,
+
+    #[error("A gravitational constant is required. Set `g` explicitly or provide a simulation.")]
+    MissingGravity,
+
+    #[error(
+        "A time value is required when using `time_of_periapsis_passage`. Set `time` explicitly or provide a simulation."
+    )]
+    MissingTime,
+
+    #[error("One of `semi_major_axis` or `period` is required.")]
+    MissingSemiMajorAxisOrPeriod,
+
+    #[error("Only one of `semi_major_axis` or `period` may be provided.")]
+    BothSemiMajorAxisAndPeriod,
+
+    #[error("Only one of `argument_of_periapsis` or `periapsis_longitude` may be provided.")]
+    BothArgumentOfPeriapsisAndPeriapsisLongitude,
+
+    #[error(
+        "Only one of `true_anomaly`, `mean_anomaly`, `eccentric_anomaly`, `mean_longitude`, `true_longitude`, or `time_of_periapsis_passage` may be provided."
+    )]
+    MultipleLongitudeInputs,
+
+    #[error("Cannot set eccentricity exactly to 1.")]
+    RadialOrbit,
+
+    #[error("Eccentricity must be greater than or equal to zero.")]
+    NegativeEccentricity,
+
+    #[error("A bound orbit (`semi_major_axis > 0`) must have `eccentricity < 1`.")]
+    BoundOrbitRequiresSubUnitEccentricity,
+
+    #[error("An unbound orbit (`semi_major_axis < 0`) must have `eccentricity > 1`.")]
+    UnboundOrbitRequiresSuperUnitEccentricity,
+
+    #[error("The true anomaly is outside the valid range for this unbound orbit.")]
+    UnboundTrueAnomalyOutOfRange,
+
+    #[error("The primary particle must have a non-zero mass.")]
+    PrimaryHasNoMass,
+
+    #[error("Unknown REBOUND orbital conversion error code: {0}")]
+    UnknownOrbitError(i32),
+}
+
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum Error {
     #[error("Integration error: {0}")]
     Integrate(#[from] IntegrateError),
@@ -73,6 +122,9 @@ pub enum Error {
 
     #[error("Integrator config error: {0}")]
     IntegratorConfig(#[from] IntegratorConfigError),
+
+    #[error(transparent)]
+    OrbitalElements(#[from] OrbitalElementsError),
 
     #[error("Error: {0}")]
     Custom(String),
@@ -99,6 +151,20 @@ impl IntegrateError {
                 rb::REB_STATUS_REB_STATUS_COLLISION => IntegrateError::Collision,
                 _ => IntegrateError::UnknownStatus(status),
             })
+        }
+    }
+}
+
+impl OrbitalElementsError {
+    pub fn from_orbit_err(code: i32) -> Self {
+        match code {
+            1 => Self::RadialOrbit,
+            2 => Self::NegativeEccentricity,
+            3 => Self::BoundOrbitRequiresSubUnitEccentricity,
+            4 => Self::UnboundOrbitRequiresSuperUnitEccentricity,
+            5 => Self::UnboundTrueAnomalyOutOfRange,
+            6 => Self::PrimaryHasNoMass,
+            _ => Self::UnknownOrbitError(code),
         }
     }
 }
