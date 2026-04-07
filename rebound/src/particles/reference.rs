@@ -135,15 +135,17 @@ mod tests {
 
     #[test]
     fn setters_update_particle_fields() {
-        let sim = Simulation::new().add_particle(create_particle! {
-            mass: 1.0,
-            x: 1.0,
-            y: 2.0,
-            z: 3.0,
-            vx: 4.0,
-            vy: 5.0,
-            vz: 6.0,
-        });
+        let sim = Simulation::new()
+            .add_particle(create_particle! {
+                mass: 1.0,
+                x: 1.0,
+                y: 2.0,
+                z: 3.0,
+                vx: 4.0,
+                vy: 5.0,
+                vz: 6.0,
+            })
+            .unwrap();
 
         {
             let mut particle = sim.get_particle(0).unwrap();

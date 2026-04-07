@@ -4,7 +4,7 @@ use rebound_bind as rb;
 
 use crate::{
     error::{OrbitalElementsError, Result},
-    particles::Particle,
+    particles::{Particle, ParticleBuilder},
     simulator::Simulation,
     utils,
 };
@@ -12,8 +12,7 @@ use crate::{
 use super::SemiMajorAxisInput;
 
 #[derive(Clone, Copy, Default)]
-pub struct PalOrbitalElementsBuilder<'a> {
-    simulation: Option<&'a Simulation>,
+pub struct PalOrbitalElementsBuilder {
     primary: Option<Particle>,
     g: Option<f64>,
     hash: u32,
@@ -27,13 +26,18 @@ pub struct PalOrbitalElementsBuilder<'a> {
     size: SemiMajorAxisInput,
 }
 
-impl<'a> PalOrbitalElementsBuilder<'a> {
+impl PalOrbitalElementsBuilder {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn set_simulation(mut self, simulation: &'a Simulation) -> Self {
-        self.simulation = Some(simulation);
+    pub fn with_simulation_defaults(mut self, simulation: &Simulation) -> Self {
+        if self.primary.is_none() {
+            self.primary = Some(simulation.com());
+        }
+        if self.g.is_none() {
+            self.g = Some(simulation.g());
+        }
         self
     }
 
@@ -116,7 +120,37 @@ impl<'a> PalOrbitalElementsBuilder<'a> {
         self
     }
 
-    pub fn build(self) -> Result<Particle> {
+    fn resolve_primary(self) -> Result<Particle> {
+        self.primary
+            .ok_or(OrbitalElementsError::MissingPrimary.into())
+    }
+
+    fn resolve_g(self) -> Result<f64> {
+        self.g.ok_or(OrbitalElementsError::MissingGravity.into())
+    }
+
+    fn resolve_semi_major_axis(self, g: f64, primary: Particle) -> Result<f64> {
+        match self.size {
+            SemiMajorAxisInput::Unset => {
+                Err(OrbitalElementsError::MissingSemiMajorAxisOrPeriod.into())
+            }
+            SemiMajorAxisInput::SemiMajorAxis(semi_major_axis) => Ok(semi_major_axis),
+            SemiMajorAxisInput::Period(period) => {
+                Ok((period * period * g * (primary.mass + self.mass) / (4.0 * PI * PI)).cbrt())
+            }
+            SemiMajorAxisInput::Conflicting => {
+                Err(OrbitalElementsError::BothSemiMajorAxisAndPeriod.into())
+            }
+        }
+    }
+}
+
+impl ParticleBuilder for PalOrbitalElementsBuilder {
+    fn with_simulation_defaults(self, simulation: &Simulation) -> Self {
+        PalOrbitalElementsBuilder::with_simulation_defaults(self, simulation)
+    }
+
+    fn build(self) -> Result<Particle> {
         let primary = self.resolve_primary()?;
         let g = self.resolve_g()?;
         let semi_major_axis = self.resolve_semi_major_axis(g, primary)?;
@@ -143,32 +177,5 @@ impl<'a> PalOrbitalElementsBuilder<'a> {
         particle.hash = self.hash;
         particle.radius = self.radius;
         Ok(particle)
-    }
-
-    fn resolve_primary(self) -> Result<Particle> {
-        self.primary
-            .or_else(|| self.simulation.map(Simulation::com))
-            .ok_or(OrbitalElementsError::MissingPrimary.into())
-    }
-
-    fn resolve_g(self) -> Result<f64> {
-        self.g
-            .or_else(|| self.simulation.map(Simulation::g))
-            .ok_or(OrbitalElementsError::MissingGravity.into())
-    }
-
-    fn resolve_semi_major_axis(self, g: f64, primary: Particle) -> Result<f64> {
-        match self.size {
-            SemiMajorAxisInput::Unset => {
-                Err(OrbitalElementsError::MissingSemiMajorAxisOrPeriod.into())
-            }
-            SemiMajorAxisInput::SemiMajorAxis(semi_major_axis) => Ok(semi_major_axis),
-            SemiMajorAxisInput::Period(period) => {
-                Ok((period * period * g * (primary.mass + self.mass) / (4.0 * PI * PI)).cbrt())
-            }
-            SemiMajorAxisInput::Conflicting => {
-                Err(OrbitalElementsError::BothSemiMajorAxisAndPeriod.into())
-            }
-        }
     }
 }

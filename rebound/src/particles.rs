@@ -7,6 +7,11 @@ use rebound_bind as rb;
 pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
 pub use reference::ParticleRef;
 
+use crate::{Result, simulator::Simulation};
+
+#[doc(hidden)]
+pub use builder::_set_particle_hash;
+
 pub type ParticlePosition = (f64, f64, f64);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -57,4 +62,10 @@ impl From<Particle> for rb::reb_particle {
             sim: std::ptr::null_mut(),
         }
     }
+}
+
+#[doc(hidden)]
+pub trait ParticleBuilder {
+    fn with_simulation_defaults(self, simulation: &Simulation) -> Self;
+    fn build(self) -> Result<Particle>;
 }

@@ -1,5 +1,6 @@
 use crate::{
-    particles::{Particle, ParticleRef},
+    Result,
+    particles::{Particle, ParticleBuilder, ParticleRef},
     utils,
 };
 
@@ -7,11 +8,12 @@ use super::Simulation;
 use rebound_bind as rb;
 
 impl Simulation {
-    pub fn add_particle(self, particle: crate::particles::Particle) -> Self {
+    pub fn add_particle(self, particle: impl ParticleBuilder) -> Result<Self> {
+        let particle = particle.with_simulation_defaults(&self).build()?;
         unsafe {
             rb::reb_simulation_add(self.inner, particle.into());
         }
-        self
+        Ok(self)
     }
 
     pub fn get_particle(&self, index: usize) -> Option<ParticleRef<'_>> {

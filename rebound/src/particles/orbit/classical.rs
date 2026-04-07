@@ -4,7 +4,7 @@ use rebound_bind as rb;
 
 use crate::{
     error::{OrbitalElementsError, Result},
-    particles::Particle,
+    particles::{Particle, ParticleBuilder},
     simulator::Simulation,
     utils,
 };
@@ -100,8 +100,7 @@ impl ClassicalLongitudeInput {
 }
 
 #[derive(Clone, Copy, Default)]
-pub struct ClassicalOrbitalElementsBuilder<'a> {
-    simulation: Option<&'a Simulation>,
+pub struct ClassicalOrbitalElementsBuilder {
     primary: Option<Particle>,
     g: Option<f64>,
     time: Option<f64>,
@@ -116,13 +115,21 @@ pub struct ClassicalOrbitalElementsBuilder<'a> {
     longitude: ClassicalLongitudeInput,
 }
 
-impl<'a> ClassicalOrbitalElementsBuilder<'a> {
+impl ClassicalOrbitalElementsBuilder {
     pub fn new() -> Self {
         Self::default()
     }
 
-    pub fn set_simulation(mut self, simulation: &'a Simulation) -> Self {
-        self.simulation = Some(simulation);
+    pub fn with_simulation_defaults(mut self, simulation: &Simulation) -> Self {
+        if self.primary.is_none() {
+            self.primary = Some(simulation.com());
+        }
+        if self.g.is_none() {
+            self.g = Some(simulation.g());
+        }
+        if self.time.is_none() {
+            self.time = Some(simulation.t());
+        }
         self
     }
 
@@ -256,57 +263,17 @@ impl<'a> ClassicalOrbitalElementsBuilder<'a> {
         self
     }
 
-    pub fn build(self) -> Result<Particle> {
-        let primary = self.resolve_primary()?;
-        let g = self.resolve_g()?;
-        let semi_major_axis = self.resolve_semi_major_axis(g, primary)?;
-        let argument_of_periapsis =
-            self.resolve_argument_of_periapsis(self.inclination, self.ascending_node_longitude)?;
-        let true_anomaly =
-            self.resolve_true_anomaly(g, primary, semi_major_axis, argument_of_periapsis)?;
-
-        let mut err = 0;
-        let particle = unsafe {
-            rb::reb_particle_from_orbit_err(
-                g,
-                primary.into(),
-                self.mass,
-                semi_major_axis,
-                self.eccentricity,
-                self.inclination,
-                self.ascending_node_longitude,
-                argument_of_periapsis,
-                true_anomaly,
-                &mut err,
-            )
-        };
-
-        if err != 0 {
-            return Err(OrbitalElementsError::from_orbit_err(err).into());
-        }
-
-        let mut particle: Particle = particle.into();
-        particle.hash = self.hash;
-        particle.radius = self.radius;
-        Ok(particle)
-    }
-
     fn resolve_primary(self) -> Result<Particle> {
         self.primary
-            .or_else(|| self.simulation.map(Simulation::com))
             .ok_or(OrbitalElementsError::MissingPrimary.into())
     }
 
     fn resolve_g(self) -> Result<f64> {
-        self.g
-            .or_else(|| self.simulation.map(Simulation::g))
-            .ok_or(OrbitalElementsError::MissingGravity.into())
+        self.g.ok_or(OrbitalElementsError::MissingGravity.into())
     }
 
     fn resolve_time(self) -> Result<f64> {
-        self.time
-            .or_else(|| self.simulation.map(Simulation::t))
-            .ok_or(OrbitalElementsError::MissingTime.into())
+        self.time.ok_or(OrbitalElementsError::MissingTime.into())
     }
 
     fn resolve_semi_major_axis(self, g: f64, primary: Particle) -> Result<f64> {
@@ -394,5 +361,46 @@ impl<'a> ClassicalOrbitalElementsBuilder<'a> {
                 Err(OrbitalElementsError::MultipleLongitudeInputs.into())
             }
         }
+    }
+}
+
+impl ParticleBuilder for ClassicalOrbitalElementsBuilder {
+    fn with_simulation_defaults(self, simulation: &Simulation) -> Self {
+        ClassicalOrbitalElementsBuilder::with_simulation_defaults(self, simulation)
+    }
+
+    fn build(self) -> Result<Particle> {
+        let primary = self.resolve_primary()?;
+        let g = self.resolve_g()?;
+        let semi_major_axis = self.resolve_semi_major_axis(g, primary)?;
+        let argument_of_periapsis =
+            self.resolve_argument_of_periapsis(self.inclination, self.ascending_node_longitude)?;
+        let true_anomaly =
+            self.resolve_true_anomaly(g, primary, semi_major_axis, argument_of_periapsis)?;
+
+        let mut err = 0;
+        let particle = unsafe {
+            rb::reb_particle_from_orbit_err(
+                g,
+                primary.into(),
+                self.mass,
+                semi_major_axis,
+                self.eccentricity,
+                self.inclination,
+                self.ascending_node_longitude,
+                argument_of_periapsis,
+                true_anomaly,
+                &mut err,
+            )
+        };
+
+        if err != 0 {
+            return Err(OrbitalElementsError::from_orbit_err(err).into());
+        }
+
+        let mut particle: Particle = particle.into();
+        particle.hash = self.hash;
+        particle.radius = self.radius;
+        Ok(particle)
     }
 }
