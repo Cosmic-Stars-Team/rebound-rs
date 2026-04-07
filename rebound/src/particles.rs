@@ -4,7 +4,7 @@ mod reference;
 
 use rebound_bind as rb;
 
-pub use orbit::ClassicalOrbitalElementsBuilder;
+pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
 pub use reference::ParticleRef;
 
 pub type ParticlePosition = (f64, f64, f64);

@@ -108,6 +108,9 @@ pub enum OrbitalElementsError {
     #[error("The primary particle must have a non-zero mass.")]
     PrimaryHasNoMass,
 
+    #[error("Pal coordinates (`ix`, `iy`) are not valid. Squared sum exceeds 4.")]
+    InvalidPalInclinationComponents,
+
     #[error("Unknown REBOUND orbital conversion error code: {0}")]
     UnknownOrbitError(i32),
 }
