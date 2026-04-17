@@ -16,9 +16,13 @@ impl Simulation {
         Ok(self)
     }
 
+    pub fn particles(&self) -> impl Iterator<Item = ParticleRef<'_>> + '_ {
+        let len = self.n();
+        (0..len).filter_map(move |i| self.get_particle(i))
+    }
+
     pub fn get_particle(&self, index: usize) -> Option<ParticleRef<'_>> {
-        let len = unsafe { (*self.inner).N as usize };
-        if index >= len {
+        if index >= self.n() {
             return None;
         }
 
