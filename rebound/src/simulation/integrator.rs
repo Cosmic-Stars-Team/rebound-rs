@@ -13,7 +13,7 @@ pub mod whfast512;
 use super::Simulation;
 use crate::{
     error::{IntegrateError, Result},
-    simulator::{
+    simulation::{
         bs::IntegratorBs, eos::IntegratorEos, ias15::IntegratorIas15, janus::IntegratorJanus,
         leapfrog::IntegratorLeapfrog, mercurius::IntegratorMercurius, saba::IntegratorSaba,
         sei::IntegratorSei, trace::IntegratorTrace, whfast::IntegratorWhfast,
@@ -233,7 +233,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
         (|| -> ::core::result::Result<(), $crate::error::Error> {
             match sim.integrator() {
-                Some($crate::simulator::Integrator::Ias15) => {
+                Some($crate::simulation::Integrator::Ias15) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_ias15();
                     $(
@@ -245,7 +245,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Whfast) => {
+                Some($crate::simulation::Integrator::Whfast) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_whfast();
                     $(
@@ -257,7 +257,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Sei) => {
+                Some($crate::simulation::Integrator::Sei) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_sei();
                     $(
@@ -269,7 +269,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Leapfrog) => {
+                Some($crate::simulation::Integrator::Leapfrog) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_leapfrog();
                     $(
@@ -281,7 +281,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Janus) => {
+                Some($crate::simulation::Integrator::Janus) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_janus();
                     $(
@@ -293,7 +293,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Mercurius) => {
+                Some($crate::simulation::Integrator::Mercurius) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_mercurius();
                     $(
@@ -305,7 +305,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Saba) => {
+                Some($crate::simulation::Integrator::Saba) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_saba();
                     $(
@@ -317,7 +317,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Eos) => {
+                Some($crate::simulation::Integrator::Eos) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_eos();
                     $(
@@ -329,7 +329,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Bs) => {
+                Some($crate::simulation::Integrator::Bs) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_bs();
                     $(
@@ -341,7 +341,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Whfast512) => {
+                Some($crate::simulation::Integrator::Whfast512) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_whfast512();
                     $(
@@ -353,7 +353,7 @@ macro_rules! _reb_simulation_set_integrator_config {
 
                     ::core::result::Result::<(), $crate::error::Error>::Ok(())
                 }
-                Some($crate::simulator::Integrator::Trace) => {
+                Some($crate::simulation::Integrator::Trace) => {
                     #[allow(unused_assignments)]
                     let mut cfg = sim.ri_trace();
                     $(
@@ -692,13 +692,13 @@ mod tests {
             .ri_ias15()
             .set_epsilon(1e-12)
             .set_min_dt(1e-5)
-            .set_adaptive_mode(crate::simulator::ias15::AdaptiveMode::Aarseth85);
+            .set_adaptive_mode(crate::simulation::ias15::AdaptiveMode::Aarseth85);
 
         assert_eq!(cfg.epsilon(), 1e-12);
         assert_eq!(cfg.min_dt(), 1e-5);
         assert_eq!(
             cfg.adaptive_mode(),
-            Some(crate::simulator::ias15::AdaptiveMode::Aarseth85)
+            Some(crate::simulation::ias15::AdaptiveMode::Aarseth85)
         );
     }
 
@@ -709,18 +709,18 @@ mod tests {
             .ri_whfast()
             .set_corrector(17)
             .set_corrector2(1)
-            .set_kernel(crate::simulator::whfast::Kernel::Lazy)
-            .set_coordinates(crate::simulator::whfast::Coordinates::Barycentric)
+            .set_kernel(crate::simulation::whfast::Kernel::Lazy)
+            .set_coordinates(crate::simulation::whfast::Coordinates::Barycentric)
             .set_recalculate_coordinates_this_timestep(1)
             .set_safe_mode(0)
             .set_keep_unsynchronized(1);
 
         assert_eq!(cfg.corrector(), 17);
         assert_eq!(cfg.corrector2(), 1);
-        assert_eq!(cfg.kernel(), Some(crate::simulator::whfast::Kernel::Lazy));
+        assert_eq!(cfg.kernel(), Some(crate::simulation::whfast::Kernel::Lazy));
         assert_eq!(
             cfg.coordinates(),
-            Some(crate::simulator::whfast::Coordinates::Barycentric)
+            Some(crate::simulation::whfast::Coordinates::Barycentric)
         );
         assert_eq!(cfg.recalculate_coordinates_this_timestep(), 1);
         assert_eq!(cfg.safe_mode(), 0);
@@ -732,11 +732,11 @@ mod tests {
         let mut sim = Simulation::new().set_integrator(Integrator::Saba);
         let cfg = sim
             .ri_saba()
-            .set_type(crate::simulator::saba::Type::SabaCl4)
+            .set_type(crate::simulation::saba::Type::SabaCl4)
             .set_safe_mode(0)
             .set_keep_unsynchronized(1);
 
-        assert_eq!(cfg.kind(), Some(crate::simulator::saba::Type::SabaCl4));
+        assert_eq!(cfg.kind(), Some(crate::simulation::saba::Type::SabaCl4));
         assert_eq!(cfg.safe_mode(), 0);
         assert_eq!(cfg.keep_unsynchronized(), 1);
     }
@@ -746,13 +746,13 @@ mod tests {
         let mut sim = Simulation::new().set_integrator(Integrator::Eos);
         let cfg = sim
             .ri_eos()
-            .set_phi0(crate::simulator::eos::Type::Lf8)
-            .set_phi1(crate::simulator::eos::Type::Pmlf6)
+            .set_phi0(crate::simulation::eos::Type::Lf8)
+            .set_phi1(crate::simulation::eos::Type::Pmlf6)
             .set_n(4)
             .set_safe_mode(0);
 
-        assert_eq!(cfg.phi0(), Some(crate::simulator::eos::Type::Lf8));
-        assert_eq!(cfg.phi1(), Some(crate::simulator::eos::Type::Pmlf6));
+        assert_eq!(cfg.phi0(), Some(crate::simulation::eos::Type::Lf8));
+        assert_eq!(cfg.phi1(), Some(crate::simulation::eos::Type::Pmlf6));
         assert_eq!(cfg.n(), 4);
         assert_eq!(cfg.safe_mode(), 0);
     }
@@ -770,19 +770,19 @@ mod tests {
         let mut sim = Simulation::new().set_integrator(Integrator::Trace);
         let cfg = sim
             .ri_trace()
-            .set_s(crate::simulator::trace::S::Custom(
-                crate::simulator::trace::trace_s_c_fn!(safe_s),
+            .set_s(crate::simulation::trace::S::Custom(
+                crate::simulation::trace::trace_s_c_fn!(safe_s),
             ))
-            .set_s_peri(crate::simulator::trace::SPeri::Custom(
-                crate::simulator::trace::trace_s_peri_c_fn!(safe_s_peri),
+            .set_s_peri(crate::simulation::trace::SPeri::Custom(
+                crate::simulation::trace::trace_s_peri_c_fn!(safe_s_peri),
             ))
-            .set_peri_mode(crate::simulator::trace::PeriMode::FullIas15)
+            .set_peri_mode(crate::simulation::trace::PeriMode::FullIas15)
             .set_r_crit_hill(5.0)
             .set_peri_crit_eta(2.5);
 
         assert_eq!(
             cfg.peri_mode(),
-            Some(crate::simulator::trace::PeriMode::FullIas15)
+            Some(crate::simulation::trace::PeriMode::FullIas15)
         );
         assert_eq!(cfg.r_crit_hill(), 5.0);
         assert_eq!(cfg.peri_crit_eta(), 2.5);
@@ -794,19 +794,19 @@ mod tests {
         set_integrator_config!(ias15_sim, {
             epsilon: 1e-12,
             min_dt: 1e-5,
-            adaptive_mode: crate::simulator::ias15::AdaptiveMode::Prs23,
+            adaptive_mode: crate::simulation::ias15::AdaptiveMode::Prs23,
         })
         .unwrap();
         assert_eq!(
             ias15_sim.ri_ias15().adaptive_mode(),
-            Some(crate::simulator::ias15::AdaptiveMode::Prs23)
+            Some(crate::simulation::ias15::AdaptiveMode::Prs23)
         );
 
         let mut mercurius_sim = Simulation::new().set_integrator(Integrator::Mercurius);
         set_integrator_config!(mercurius_sim, {
             r_crit_hill: 4.0,
             safe_mode: 0,
-            l: crate::simulator::mercurius::L::Infinity,
+            l: crate::simulation::mercurius::L::Infinity,
         })
         .unwrap();
         assert_eq!(mercurius_sim.ri_mercurius().r_crit_hill(), 4.0);
@@ -814,48 +814,48 @@ mod tests {
         let mut whfast_sim = Simulation::new().set_integrator(Integrator::Whfast);
         set_integrator_config!(whfast_sim, {
             corrector: 17,
-            coordinates: crate::simulator::whfast::Coordinates::Barycentric,
+            coordinates: crate::simulation::whfast::Coordinates::Barycentric,
             keep_unsynchronized: 1,
         })
         .unwrap();
         assert_eq!(
             whfast_sim.ri_whfast().coordinates(),
-            Some(crate::simulator::whfast::Coordinates::Barycentric)
+            Some(crate::simulation::whfast::Coordinates::Barycentric)
         );
 
         let mut saba_sim = Simulation::new().set_integrator(Integrator::Saba);
         set_integrator_config!(saba_sim, {
-            type: crate::simulator::saba::Type::Saba1064,
+            type: crate::simulation::saba::Type::Saba1064,
             safe_mode: 0,
         })
         .unwrap();
         assert_eq!(
             saba_sim.ri_saba().kind(),
-            Some(crate::simulator::saba::Type::Saba1064)
+            Some(crate::simulation::saba::Type::Saba1064)
         );
 
         let mut eos_sim = Simulation::new().set_integrator(Integrator::Eos);
         set_integrator_config!(eos_sim, {
-            phi0: crate::simulator::eos::Type::Lf4,
-            phi1: crate::simulator::eos::Type::Pmlf4,
+            phi0: crate::simulation::eos::Type::Lf4,
+            phi1: crate::simulation::eos::Type::Pmlf4,
             n: 3,
         })
         .unwrap();
         assert_eq!(
             eos_sim.ri_eos().phi1(),
-            Some(crate::simulator::eos::Type::Pmlf4)
+            Some(crate::simulation::eos::Type::Pmlf4)
         );
 
         let mut trace_sim = Simulation::new().set_integrator(Integrator::Trace);
         set_integrator_config!(trace_sim, {
-            peri_mode: crate::simulator::trace::PeriMode::FullBs,
+            peri_mode: crate::simulation::trace::PeriMode::FullBs,
             r_crit_hill: 6.0,
             peri_crit_eta: 1.5,
         })
         .unwrap();
         assert_eq!(
             trace_sim.ri_trace().peri_mode(),
-            Some(crate::simulator::trace::PeriMode::FullBs)
+            Some(crate::simulation::trace::PeriMode::FullBs)
         );
     }
 

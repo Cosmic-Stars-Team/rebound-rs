@@ -1,6 +1,6 @@
 use rebound_bind as rb;
 
-use crate::simulator::Simulation;
+use crate::simulation::Simulation;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kernel {

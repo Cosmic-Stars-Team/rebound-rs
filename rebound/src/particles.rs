@@ -8,7 +8,7 @@ pub use orbit::Orbit;
 pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
 pub use reference::ParticleRef;
 
-use crate::{Result, simulator::Simulation};
+use crate::{Result, simulation::Simulation};
 
 #[doc(hidden)]
 pub use builder::_set_particle_hash;

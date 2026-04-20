@@ -1,4 +1,4 @@
-use rebound::{Result, create_particle, simulator::Simulation};
+use rebound::{Result, create_particle, simulation::Simulation};
 
 fn main() -> Result<()> {
     let mut r = Simulation::new()

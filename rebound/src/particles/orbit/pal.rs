@@ -5,7 +5,7 @@ use rebound_bind as rb;
 use crate::{
     error::{OrbitalElementsError, Result},
     particles::{Particle, ParticleBuilder},
-    simulator::Simulation,
+    simulation::Simulation,
     utils,
 };
 

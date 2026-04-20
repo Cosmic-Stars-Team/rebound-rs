@@ -66,13 +66,13 @@ impl Particle {
         self
     }
 
-    pub fn with_simulation_defaults(self, _simulation: &crate::simulator::Simulation) -> Self {
+    pub fn with_simulation_defaults(self, _simulation: &crate::simulation::Simulation) -> Self {
         self
     }
 }
 
 impl ParticleBuilder for Particle {
-    fn with_simulation_defaults(self, _simulation: &crate::simulator::Simulation) -> Self {
+    fn with_simulation_defaults(self, _simulation: &crate::simulation::Simulation) -> Self {
         self
     }
 

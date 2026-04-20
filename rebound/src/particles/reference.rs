@@ -2,7 +2,7 @@ use rebound_bind as rb;
 
 use crate::{
     particles::{Orbit, Particle, Vec3d},
-    simulator::Simulation,
+    simulation::Simulation,
     utils,
 };
 
@@ -138,7 +138,7 @@ impl<'a> From<ParticleRef<'a>> for Particle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{create_particle, simulator::Simulation};
+    use crate::{create_particle, simulation::Simulation};
 
     #[test]
     fn setters_update_particle_fields() {

@@ -1,4 +1,4 @@
-use crate::simulator::Simulation;
+use crate::simulation::Simulation;
 use rebound_bind as rb;
 
 impl Simulation {
