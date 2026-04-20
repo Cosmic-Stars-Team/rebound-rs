@@ -1,7 +1,7 @@
 use rebound_bind as rb;
 
 use crate::{
-    particles::{Particle, ParticlePosition},
+    particles::{Orbit, Particle, Vec3d},
     simulator::Simulation,
     utils,
 };
@@ -25,7 +25,7 @@ impl<'a> ParticleRef<'a> {
         self.set_hash(utils::hash(hash))
     }
 
-    pub fn position(&self) -> Option<ParticlePosition> {
+    pub fn position(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
         Some((particle.x, particle.y, particle.z))
     }
@@ -53,7 +53,7 @@ impl<'a> ParticleRef<'a> {
         Some(())
     }
 
-    pub fn velocity(&self) -> Option<ParticlePosition> {
+    pub fn velocity(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
         Some((particle.vx, particle.vy, particle.vz))
     }
@@ -81,7 +81,7 @@ impl<'a> ParticleRef<'a> {
         Some(())
     }
 
-    pub fn acceleration(&self) -> Option<ParticlePosition> {
+    pub fn acceleration(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
         Some((particle.ax, particle.ay, particle.az))
     }
@@ -110,6 +110,13 @@ impl<'a> ParticleRef<'a> {
 
     pub fn is_null(&self) -> bool {
         self.inner.is_null()
+    }
+
+    pub fn into_orbit(&self, g: f64, primary: &ParticleRef) -> Option<Orbit> {
+        // TODO: Use reb_orbit_from_particle_err
+        let orbit =
+            unsafe { rb::reb_orbit_from_particle(g, *self.particle()?, *primary.particle()?) };
+        Some(orbit.into())
     }
 
     fn particle(&self) -> Option<&rb::reb_particle> {

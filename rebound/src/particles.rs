@@ -4,6 +4,7 @@ mod reference;
 
 use rebound_bind as rb;
 
+pub use orbit::Orbit;
 pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
 pub use reference::ParticleRef;
 
@@ -12,15 +13,15 @@ use crate::{Result, simulator::Simulation};
 #[doc(hidden)]
 pub use builder::_set_particle_hash;
 
-pub type ParticlePosition = (f64, f64, f64);
+pub type Vec3d = (f64, f64, f64);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Particle {
     pub hash: u32,
     pub mass: f64,
     pub radius: f64,
-    pub position: ParticlePosition,
-    pub velocity: ParticlePosition,
+    pub position: Vec3d,
+    pub velocity: Vec3d,
 }
 
 impl Particle {
