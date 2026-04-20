@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
-members = ["rebound", "bind/rebound"]
-default-members = ["rebound"]
+members = ["rebound", "bind/rebound", "examples/simplest"]
+default-members = ["rebound", "bind/rebound"]
 
 [workspace.package]
 version = "4.6.0"
