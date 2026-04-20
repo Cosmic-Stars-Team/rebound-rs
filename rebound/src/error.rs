@@ -129,6 +129,9 @@ pub enum Error {
     #[error(transparent)]
     OrbitalElements(#[from] OrbitalElementsError),
 
+    #[error("Failed to allocate")]
+    Allocation,
+
     #[error("Error: {0}")]
     Custom(String),
 }
