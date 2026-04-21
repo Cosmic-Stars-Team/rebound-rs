@@ -8,12 +8,11 @@ pub use orbit::Orbit;
 pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
 pub use reference::ParticleRef;
 
+use crate::types::Vec3d;
 use crate::{Result, simulation::Simulation};
 
 #[doc(hidden)]
 pub use builder::_set_particle_hash;
-
-pub type Vec3d = (f64, f64, f64);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Particle {
@@ -36,8 +35,8 @@ impl From<rb::reb_particle> for Particle {
             hash: particle.hash,
             mass: particle.m,
             radius: particle.r,
-            position: (particle.x, particle.y, particle.z),
-            velocity: (particle.vx, particle.vy, particle.vz),
+            position: Vec3d(particle.x, particle.y, particle.z),
+            velocity: Vec3d(particle.vx, particle.vy, particle.vz),
         }
     }
 }

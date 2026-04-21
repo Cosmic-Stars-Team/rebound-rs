@@ -6,7 +6,7 @@ pub use classical::ClassicalOrbitalElementsBuilder;
 pub use pal::PalOrbitalElementsBuilder;
 
 use common::SemiMajorAxisInput;
-use rebound_bind::{self as rb, reb_orbit, reb_vec3d};
+use rebound_bind::{self as rb, reb_orbit};
 
 use crate::particles::Vec3d;
 
@@ -61,8 +61,8 @@ impl From<reb_orbit> for Orbit {
             pal_k: value.pal_k,
             pal_ix: value.pal_ix,
             pal_iy: value.pal_iy,
-            hvec: (value.hvec.x, value.hvec.y, value.hvec.z),
-            evec: (value.evec.x, value.evec.y, value.evec.z),
+            hvec: value.hvec.into(),
+            evec: value.evec.into(),
             period: value.P,
             semi_major_axis: value.a,
             eccentricity: value.e,
@@ -91,16 +91,8 @@ impl From<Orbit> for reb_orbit {
             pal_k: value.pal_k,
             pal_ix: value.pal_ix,
             pal_iy: value.pal_iy,
-            hvec: reb_vec3d {
-                x: value.hvec.0,
-                y: value.hvec.1,
-                z: value.hvec.2,
-            },
-            evec: reb_vec3d {
-                x: value.evec.0,
-                y: value.evec.1,
-                z: value.evec.2,
-            },
+            hvec: value.hvec.into(),
+            evec: value.evec.into(),
             P: value.period,
             a: value.semi_major_axis,
             e: value.eccentricity,

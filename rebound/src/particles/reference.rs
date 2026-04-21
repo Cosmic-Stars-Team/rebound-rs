@@ -1,8 +1,9 @@
 use rebound_bind as rb;
 
 use crate::{
-    particles::{Orbit, Particle, Vec3d},
+    particles::{Orbit, Particle},
     simulation::Simulation,
+    types::Vec3d,
     utils,
 };
 
@@ -27,7 +28,7 @@ impl<'a> ParticleRef<'a> {
 
     pub fn position(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
-        Some((particle.x, particle.y, particle.z))
+        Some(Vec3d(particle.x, particle.y, particle.z))
     }
 
     pub fn set_x(&mut self, x: f64) -> Option<()> {
@@ -55,7 +56,7 @@ impl<'a> ParticleRef<'a> {
 
     pub fn velocity(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
-        Some((particle.vx, particle.vy, particle.vz))
+        Some(Vec3d(particle.vx, particle.vy, particle.vz))
     }
 
     pub fn set_vx(&mut self, vx: f64) -> Option<()> {
@@ -83,7 +84,7 @@ impl<'a> ParticleRef<'a> {
 
     pub fn acceleration(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
-        Some((particle.ax, particle.ay, particle.az))
+        Some(Vec3d(particle.ax, particle.ay, particle.az))
     }
 
     pub fn mass(&self) -> Option<f64> {
@@ -138,7 +139,7 @@ impl<'a> From<ParticleRef<'a>> for Particle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{create_particle, simulation::Simulation};
+    use crate::{create_particle, simulation::Simulation, types::Vec3d};
 
     #[test]
     fn setters_update_particle_fields() {
@@ -167,7 +168,7 @@ mod tests {
         assert_eq!(particle.hash(), Some(42));
         assert_eq!(particle.mass(), Some(2.0));
         assert_eq!(particle.radius(), Some(0.1));
-        assert_eq!(particle.position(), Some((7.0, 8.0, 9.0)));
-        assert_eq!(particle.velocity(), Some((1.1, 1.2, 1.3)));
+        assert_eq!(particle.position(), Some(Vec3d(7.0, 8.0, 9.0)));
+        assert_eq!(particle.velocity(), Some(Vec3d(1.1, 1.2, 1.3)));
     }
 }

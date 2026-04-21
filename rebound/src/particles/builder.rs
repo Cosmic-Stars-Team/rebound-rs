@@ -3,6 +3,7 @@ use crate::{
     particles::{
         ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder, Particle, ParticleBuilder,
     },
+    types::Vec3d,
     utils,
 };
 
@@ -42,7 +43,7 @@ impl Particle {
     }
 
     pub fn set_position(mut self, x: f64, y: f64, z: f64) -> Self {
-        self.position = (x, y, z);
+        self.position = Vec3d(x, y, z);
         self
     }
 
@@ -62,7 +63,7 @@ impl Particle {
     }
 
     pub fn set_velocity(mut self, vx: f64, vy: f64, vz: f64) -> Self {
-        self.velocity = (vx, vy, vz);
+        self.velocity = Vec3d(vx, vy, vz);
         self
     }
 
@@ -1419,6 +1420,8 @@ macro_rules! create_particle {
 
 #[cfg(test)]
 mod tests {
+    use crate::types::Vec3d;
+
     #[test]
     fn macro_test() {
         let p1 = create_particle! {
@@ -1430,14 +1433,14 @@ mod tests {
             vz: 0.3,
         };
         assert_eq!(p1.mass, 0.0);
-        assert_eq!(p1.position, (1.0, 2.0, 3.0));
-        assert_eq!(p1.velocity, (0.1, 0.2, 0.3));
+        assert_eq!(p1.position, Vec3d(1.0, 2.0, 3.0));
+        assert_eq!(p1.velocity, Vec3d(0.1, 0.2, 0.3));
 
         let p2 = create_particle! {
             mass: 1.0,
         };
         assert_eq!(p2.mass, 1.0);
-        assert_eq!(p2.position, (0.0, 0.0, 0.0));
-        assert_eq!(p2.velocity, (0.0, 0.0, 0.0));
+        assert_eq!(p2.position, Vec3d(0.0, 0.0, 0.0));
+        assert_eq!(p2.velocity, Vec3d(0.0, 0.0, 0.0));
     }
 }
