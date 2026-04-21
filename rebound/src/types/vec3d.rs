@@ -1,10 +1,13 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::{
+    fmt::Debug,
+    ops::{Add, Div, Mul, Sub},
+};
 
 use rebound_bind as rb;
 
 use crate::types::Rotation;
 
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Clone, Copy, Default, PartialEq)]
 pub struct Vec3d(pub f64, pub f64, pub f64);
 
 impl Vec3d {
@@ -95,5 +98,11 @@ impl From<Vec3d> for rb::reb_vec3d {
             y: value.1,
             z: value.2,
         }
+    }
+}
+
+impl Debug for Vec3d {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Vec3d (x = {}, y = {}, z = {})", self.0, self.1, self.2)
     }
 }
