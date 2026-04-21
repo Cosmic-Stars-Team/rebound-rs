@@ -41,6 +41,10 @@ impl Rotation {
     pub fn slerp(self, other: Self, t: f64) -> Self {
         unsafe { rb::reb_rotation_slerp(self.into(), other.into(), t) }.into()
     }
+
+    pub fn imag(self) -> Vec3d {
+        Vec3d(self.ix, self.iy, self.iz)
+    }
 }
 
 impl From<rb::reb_rotation> for Rotation {
