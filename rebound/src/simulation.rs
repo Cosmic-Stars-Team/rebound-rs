@@ -1,11 +1,13 @@
+mod domain;
 mod integrator;
-mod options;
 mod particles;
+mod settings;
+mod state;
 mod traits;
 mod transfer;
 
 pub use integrator::*;
-pub use options::*;
+pub use settings::*;
 
 use rebound_bind as rb;
 
@@ -57,12 +59,5 @@ impl Simulation {
         }
 
         Ok(Self { inner: ptr })
-    }
-
-    pub fn configure_box(self, boxsize: f64, n_root_x: i32, n_root_y: i32, n_root_z: i32) -> Self {
-        unsafe {
-            rb::reb_simulation_configure_box(self.inner, boxsize, n_root_x, n_root_y, n_root_z);
-        }
-        self
     }
 }
