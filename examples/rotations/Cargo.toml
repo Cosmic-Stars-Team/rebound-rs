@@ -1,0 +1,8 @@
+[package]
+name = "rotations"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rebound = { path = "../../rebound" }

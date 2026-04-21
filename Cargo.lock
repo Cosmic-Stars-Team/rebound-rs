@@ -965,6 +965,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rotations"
+version = "4.6.0"
+dependencies = [
+ "rebound",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

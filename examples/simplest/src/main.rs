@@ -1,6 +1,9 @@
 use rebound::{Result, create_particle, simulation::Simulation};
 
 fn main() -> Result<()> {
+    // This example is ported from the C version of REBOUND.
+    // https://github.com/hannorein/rebound/blob/main/examples/simplest/problem.c
+
     let mut r = Simulation::try_new()?
         .add_particle(create_particle! {
             mass: 1.
