@@ -3,7 +3,7 @@ use crate::{
     particles::{
         ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder, Particle, ParticleBuilder,
     },
-    types::Vec3d,
+    types::{Rotation, Vec3d},
     utils,
 };
 
@@ -64,6 +64,18 @@ impl Particle {
 
     pub fn set_velocity(mut self, vx: f64, vy: f64, vz: f64) -> Self {
         self.velocity = Vec3d(vx, vy, vz);
+        self
+    }
+
+    pub fn irotate(self, rotation: Rotation) -> Self {
+        let mut pos = self.position;
+        pos.irotate(rotation);
+        self.set_position(pos.0, pos.1, pos.2);
+
+        let mut vel = self.velocity;
+        vel.irotate(rotation);
+        self.set_velocity(vel.0, vel.1, vel.2);
+
         self
     }
 

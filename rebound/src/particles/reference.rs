@@ -3,7 +3,7 @@ use rebound_bind as rb;
 use crate::{
     particles::{Orbit, Particle},
     simulation::Simulation,
-    types::Vec3d,
+    types::{Rotation, Vec3d},
     utils,
 };
 
@@ -118,6 +118,17 @@ impl<'a> ParticleRef<'a> {
         let orbit =
             unsafe { rb::reb_orbit_from_particle(g, *self.particle()?, *primary.particle()?) };
         Some(orbit.into())
+    }
+
+    pub fn irotate(&mut self, rotation: Rotation) -> Option<()> {
+        let mut pos = self.position()?;
+        pos.irotate(rotation);
+        self.set_position(pos.0, pos.1, pos.2);
+
+        let mut vel = self.velocity()?;
+        vel.irotate(rotation);
+        self.set_velocity(vel.0, vel.1, vel.2);
+        Some(())
     }
 
     fn particle(&self) -> Option<&rb::reb_particle> {

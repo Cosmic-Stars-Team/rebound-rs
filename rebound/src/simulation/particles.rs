@@ -1,6 +1,7 @@
 use crate::{
     Result,
     particles::{Particle, ParticleBuilder, ParticleRef},
+    types::Rotation,
     utils,
 };
 
@@ -59,5 +60,12 @@ impl Simulation {
     pub fn com_range(&self, first: i32, last: i32) -> Particle {
         let com = unsafe { rb::reb_simulation_com_range(self.inner, first, last) };
         com.into()
+    }
+
+    pub fn irotate(self, rotation: Rotation) -> Option<Self> {
+        for mut particle in self.particles() {
+            particle.irotate(rotation)?;
+        }
+        Some(self)
     }
 }
