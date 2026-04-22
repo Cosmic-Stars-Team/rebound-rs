@@ -1,4 +1,4 @@
-use crate::simulation::Simulation;
+use crate::simulation::{_Simulation, Simulation};
 use rebound_bind as rb;
 
 pub trait SimulationRead {
@@ -7,6 +7,12 @@ pub trait SimulationRead {
 
 pub trait SimulationWrite: SimulationRead {
     fn raw_mut(&mut self) -> *mut rb::reb_simulation;
+}
+
+pub(crate) trait SimulationReadInternal: SimulationRead {
+    fn owned(&self) -> &_Simulation {
+        unsafe { _Simulation::from_raw(self.raw()) }
+    }
 }
 
 impl SimulationRead for Simulation {
@@ -21,6 +27,8 @@ impl SimulationWrite for Simulation {
     }
 }
 
+impl<T: SimulationRead + ?Sized> SimulationReadInternal for T {}
+
 impl Clone for Simulation {
     fn clone(&self) -> Self {
         let mut cloned = Simulation::try_new().expect("failed to allocate REBOUND simulation");
@@ -32,6 +40,7 @@ impl Clone for Simulation {
                 self.raw() as *mut rb::reb_simulation,
                 &mut warnings,
             );
+            super::clear_callback_trampolines(cloned.raw_mut());
         }
 
         cloned

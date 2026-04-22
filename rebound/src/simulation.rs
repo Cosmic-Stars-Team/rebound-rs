@@ -1,3 +1,4 @@
+mod callbacks;
 mod domain;
 mod integrator;
 mod particles;
@@ -7,6 +8,7 @@ mod state;
 mod traits;
 mod transfer;
 
+pub use callbacks::*;
 pub use domain::*;
 pub use integrator::*;
 pub use particles::*;
@@ -18,6 +20,7 @@ pub use transfer::*;
 
 use std::{
     alloc::{Layout, alloc},
+    cell::UnsafeCell,
     marker::PhantomPinned,
     mem::MaybeUninit,
     pin::Pin,
@@ -36,7 +39,7 @@ pub(crate) struct _Simulation {
     // `raw` must remain the first field so callback trampolines can cast a
     // `*mut reb_simulation` back to `*mut _Simulation`.
     pub(crate) raw: rb::reb_simulation,
-    pub(crate) state: state::SimulationState,
+    state: UnsafeCell<state::SimulationState>,
     _pin: PhantomPinned,
 }
 
@@ -45,7 +48,7 @@ impl _Simulation {
         Self {
             // SAFETY: REBOUND initializes `reb_simulation` from a zeroed allocation.
             raw: unsafe { MaybeUninit::<rb::reb_simulation>::zeroed().assume_init() },
-            state: state::SimulationState::new(),
+            state: UnsafeCell::new(state::SimulationState::new()),
             _pin: PhantomPinned,
         }
     }
@@ -56,6 +59,14 @@ impl _Simulation {
 
     pub(crate) fn sim_mut(self: Pin<&mut Self>) -> SimulationRefMut<'_> {
         SimulationRefMut::new(self)
+    }
+
+    pub(crate) fn state(&self) -> &state::SimulationState {
+        unsafe { &*self.state.get() }
+    }
+
+    pub(crate) fn with_state_mut<R>(&self, f: impl FnOnce(&mut state::SimulationState) -> R) -> R {
+        unsafe { f(&mut *self.state.get()) }
     }
 
     #[allow(dead_code)]
