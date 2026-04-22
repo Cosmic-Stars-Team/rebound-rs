@@ -1,10 +1,8 @@
 use rebound_bind as rb;
 
-use crate::simulation::Simulation;
-
 pub struct IntegratorWhfast512<'a> {
     pub(crate) inner: *mut rb::reb_integrator_whfast512,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
 
 impl<'a> IntegratorWhfast512<'a> {

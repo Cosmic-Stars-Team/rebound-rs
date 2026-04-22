@@ -1,15 +1,16 @@
+use core::marker::PhantomData;
+
 use rebound_bind as rb;
 
 use crate::{
     particles::{Orbit, Particle},
-    simulation::Simulation,
     types::{Rotation, Vec3d},
     utils,
 };
 
 pub struct ParticleRef<'a> {
     pub(crate) inner: *mut rb::reb_particle,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: PhantomData<&'a ()>,
 }
 
 impl<'a> ParticleRef<'a> {
@@ -150,21 +151,25 @@ impl<'a> From<ParticleRef<'a>> for Particle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{create_particle, simulation::Simulation, types::Vec3d};
+    use crate::{
+        create_particle,
+        simulation::{Simulation, SimulationParticlesRead, SimulationParticlesWrite},
+        types::Vec3d,
+    };
 
     #[test]
     fn setters_update_particle_fields() {
-        let sim = Simulation::new()
-            .add_particle(create_particle! {
-                mass: 1.0,
-                x: 1.0,
-                y: 2.0,
-                z: 3.0,
-                vx: 4.0,
-                vy: 5.0,
-                vz: 6.0,
-            })
-            .unwrap();
+        let mut sim = Simulation::new();
+        sim.add_particle(create_particle! {
+            mass: 1.0,
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+            vx: 4.0,
+            vy: 5.0,
+            vz: 6.0,
+        })
+        .unwrap();
 
         {
             let mut particle = sim.get_particle(0).unwrap();

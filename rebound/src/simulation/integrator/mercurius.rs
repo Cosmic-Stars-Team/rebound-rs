@@ -1,7 +1,5 @@
 use rebound_bind as rb;
 
-use crate::simulation::Simulation;
-
 pub enum L {
     Null,
     Mercurius,
@@ -48,7 +46,7 @@ pub use _reb_integrator_mercurius_c_fn as mercurius_c_fn;
 
 pub struct IntegratorMercurius<'a> {
     pub(crate) inner: *mut rb::reb_integrator_mercurius,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
 
 impl<'a> IntegratorMercurius<'a> {

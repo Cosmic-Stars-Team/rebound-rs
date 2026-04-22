@@ -12,7 +12,8 @@ pub mod trace;
 pub mod whfast;
 pub mod whfast512;
 
-use super::Simulation;
+use core::marker::PhantomData;
+
 use crate::{
     error::{IntegrateError, Result},
     simulation::{
@@ -24,6 +25,8 @@ use crate::{
 };
 
 use rebound_bind as rb;
+
+use super::{SimulationRead, SimulationWrite};
 
 pub use self::r#macro::set_integrator_config;
 
@@ -99,132 +102,138 @@ impl Integrator {
     }
 }
 
-impl Simulation {
-    pub fn integrator(&self) -> Option<Integrator> {
-        unsafe { Integrator::from_raw((*self.inner).integrator) }
+pub trait SimulationIntegratorRead: SimulationRead {
+    fn integrator(&self) -> Option<Integrator> {
+        unsafe { Integrator::from_raw((*self.raw()).integrator) }
     }
+}
 
-    pub fn set_integrator(self, integrator: Integrator) -> Self {
+pub trait SimulationIntegratorWrite: SimulationIntegratorRead + SimulationWrite {
+    fn set_integrator(&mut self, integrator: Integrator) -> &mut Self {
         unsafe {
-            (*self.inner).integrator = integrator.into();
+            (*self.raw_mut()).integrator = integrator.into();
         }
         self
     }
 
-    pub fn reset_integrator(self) -> Self {
+    fn reset_integrator(&mut self) -> &mut Self {
         unsafe {
-            rb::reb_simulation_reset_integrator(self.inner);
-        }
-
-        self
-    }
-
-    pub fn synchronize(self) -> Self {
-        unsafe {
-            rb::reb_simulation_synchronize(self.inner);
+            rb::reb_simulation_reset_integrator(self.raw_mut());
         }
 
         self
     }
 
-    pub fn integrate(&mut self, tmax: f64) -> Result<()> {
-        let status = unsafe { rb::reb_simulation_integrate(self.inner, tmax) };
+    fn synchronize(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_simulation_synchronize(self.raw_mut());
+        }
+
+        self
+    }
+
+    fn integrate(&mut self, tmax: f64) -> Result<&mut Self> {
+        let status = unsafe { rb::reb_simulation_integrate(self.raw_mut(), tmax) };
 
         match IntegrateError::from_reb_status(status) {
             Some(err) => Err(err.into()),
-            None => Ok(()),
+            None => Ok(self),
         }
     }
 
-    pub fn step(&mut self) {
-        unsafe { rb::reb_simulation_step(self.inner) };
+    fn step(&mut self) -> &mut Self {
+        unsafe { rb::reb_simulation_step(self.raw_mut()) };
+        self
     }
 
-    pub fn ri_mercurius(&mut self) -> mercurius::IntegratorMercurius<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_mercurius };
+    fn ri_mercurius(&mut self) -> mercurius::IntegratorMercurius<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_mercurius };
         IntegratorMercurius {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_sei(&mut self) -> sei::IntegratorSei<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_sei };
+    fn ri_sei(&mut self) -> sei::IntegratorSei<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_sei };
         IntegratorSei {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_leapfrog(&mut self) -> leapfrog::IntegratorLeapfrog<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_leapfrog };
+    fn ri_leapfrog(&mut self) -> leapfrog::IntegratorLeapfrog<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_leapfrog };
         IntegratorLeapfrog {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_bs(&mut self) -> bs::IntegratorBs<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_bs };
+    fn ri_bs(&mut self) -> bs::IntegratorBs<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_bs };
         IntegratorBs {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_ias15(&mut self) -> ias15::IntegratorIas15<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_ias15 };
+    fn ri_ias15(&mut self) -> ias15::IntegratorIas15<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_ias15 };
         IntegratorIas15 {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_janus(&mut self) -> janus::IntegratorJanus<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_janus };
+    fn ri_janus(&mut self) -> janus::IntegratorJanus<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_janus };
         IntegratorJanus {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_whfast(&mut self) -> whfast::IntegratorWhfast<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_whfast };
+    fn ri_whfast(&mut self) -> whfast::IntegratorWhfast<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_whfast };
         IntegratorWhfast {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_saba(&mut self) -> saba::IntegratorSaba<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_saba };
+    fn ri_saba(&mut self) -> saba::IntegratorSaba<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_saba };
         IntegratorSaba {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_eos(&mut self) -> eos::IntegratorEos<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_eos };
+    fn ri_eos(&mut self) -> eos::IntegratorEos<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_eos };
         IntegratorEos {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_trace(&mut self) -> trace::IntegratorTrace<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_trace };
+    fn ri_trace(&mut self) -> trace::IntegratorTrace<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_trace };
         IntegratorTrace {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 
-    pub fn ri_whfast512(&mut self) -> whfast512::IntegratorWhfast512<'_> {
-        let ptr = unsafe { &raw mut (*self.inner).ri_whfast512 };
+    fn ri_whfast512(&mut self) -> whfast512::IntegratorWhfast512<'_> {
+        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_whfast512 };
         IntegratorWhfast512 {
             inner: ptr,
-            _sim: self,
+            _marker: PhantomData,
         }
     }
 }
+
+impl<T: SimulationRead + ?Sized> SimulationIntegratorRead for T {}
+impl<T: SimulationWrite + ?Sized> SimulationIntegratorWrite for T {}

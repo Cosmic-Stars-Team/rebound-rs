@@ -1,18 +1,21 @@
-use crate::simulation::Simulation;
 use rebound_bind as rb;
 
-impl Simulation {
-    pub fn move_to_com(self) -> Self {
+use super::SimulationWrite;
+
+pub trait SimulationTransferWrite: SimulationWrite {
+    fn move_to_com(&mut self) -> &mut Self {
         unsafe {
-            rb::reb_simulation_move_to_com(self.inner);
+            rb::reb_simulation_move_to_com(self.raw_mut());
         }
         self
     }
 
-    pub fn move_to_hel(self) -> Self {
+    fn move_to_hel(&mut self) -> &mut Self {
         unsafe {
-            rb::reb_simulation_move_to_hel(self.inner);
+            rb::reb_simulation_move_to_hel(self.raw_mut());
         }
         self
     }
 }
+
+impl<T: SimulationWrite + ?Sized> SimulationTransferWrite for T {}

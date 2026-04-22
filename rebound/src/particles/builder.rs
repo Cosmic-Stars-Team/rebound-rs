@@ -3,6 +3,7 @@ use crate::{
     particles::{
         ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder, Particle, ParticleBuilder,
     },
+    simulation::{SimulationParticlesRead, SimulationSettingsRead, SimulationStateRead},
     types::{Rotation, Vec3d},
     utils,
 };
@@ -79,13 +80,19 @@ impl Particle {
         self
     }
 
-    pub fn with_simulation_defaults(self, _simulation: &crate::simulation::Simulation) -> Self {
+    pub fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
+    where
+        S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
+    {
         self
     }
 }
 
 impl ParticleBuilder for Particle {
-    fn with_simulation_defaults(self, _simulation: &crate::simulation::Simulation) -> Self {
+    fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
+    where
+        S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
+    {
         self
     }
 

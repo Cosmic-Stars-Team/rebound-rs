@@ -5,7 +5,7 @@ use rebound_bind as rb;
 use crate::{
     error::{OrbitalElementsError, Result},
     particles::{Particle, ParticleBuilder},
-    simulation::Simulation,
+    simulation::{SimulationParticlesRead, SimulationSettingsRead, SimulationStateRead},
     utils,
 };
 
@@ -31,7 +31,10 @@ impl PalOrbitalElementsBuilder {
         Self::default()
     }
 
-    pub fn with_simulation_defaults(mut self, simulation: &Simulation) -> Self {
+    pub fn with_simulation_defaults<S>(mut self, simulation: &S) -> Self
+    where
+        S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
+    {
         if self.primary.is_none() {
             self.primary = Some(simulation.com());
         }
@@ -146,7 +149,10 @@ impl PalOrbitalElementsBuilder {
 }
 
 impl ParticleBuilder for PalOrbitalElementsBuilder {
-    fn with_simulation_defaults(self, simulation: &Simulation) -> Self {
+    fn with_simulation_defaults<S>(self, simulation: &S) -> Self
+    where
+        S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
+    {
         PalOrbitalElementsBuilder::with_simulation_defaults(self, simulation)
     }
 

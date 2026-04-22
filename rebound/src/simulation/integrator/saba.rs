@@ -1,7 +1,5 @@
 use rebound_bind as rb;
 
-use crate::simulation::Simulation;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Type {
     Wh = rb::reb_integrator_saba_REB_SABA_1 as isize,
@@ -77,7 +75,7 @@ impl Type {
 
 pub struct IntegratorSaba<'a> {
     pub(crate) inner: *mut rb::reb_integrator_saba,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
 
 impl<'a> IntegratorSaba<'a> {

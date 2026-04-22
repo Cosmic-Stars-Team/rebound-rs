@@ -6,8 +6,13 @@ mod state;
 mod traits;
 mod transfer;
 
+pub use domain::*;
 pub use integrator::*;
+pub use particles::*;
 pub use settings::*;
+pub use state::*;
+pub use traits::*;
+pub use transfer::*;
 
 use std::{
     alloc::{Layout, alloc},
@@ -21,7 +26,6 @@ use rebound_bind as rb;
 use crate::{Error, Result};
 
 pub struct Simulation {
-    pub(crate) inner: *mut rb::reb_simulation,
     _owned: Pin<Box<_Simulation>>,
 }
 
@@ -49,8 +53,9 @@ impl Default for Simulation {
 
 impl Drop for Simulation {
     fn drop(&mut self) {
+        let raw = unsafe { &raw mut self._owned_mut().get_unchecked_mut().raw };
         unsafe {
-            rb::reb_simulation_free_pointers(self.inner);
+            rb::reb_simulation_free_pointers(raw);
         }
     }
 }
@@ -110,15 +115,12 @@ impl Simulation {
     /// Returns an error if the simulation could not be allocated.
     pub fn try_new() -> Result<Self> {
         let mut owned = Self::new_owned()?;
-        let inner = unsafe { &raw mut owned.as_mut().get_unchecked_mut().raw };
+        let raw = unsafe { &raw mut owned.as_mut().get_unchecked_mut().raw };
 
         unsafe {
-            rb::reb_simulation_init(inner);
+            rb::reb_simulation_init(raw);
         }
 
-        Ok(Self {
-            inner,
-            _owned: owned,
-        })
+        Ok(Self { _owned: owned })
     }
 }

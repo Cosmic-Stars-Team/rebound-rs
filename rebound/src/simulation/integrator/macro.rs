@@ -9,10 +9,10 @@ macro_rules! _reb_simulation_set_integrator_config {
         )*
 
         (|| -> ::core::result::Result<(), $crate::error::Error> {
-            match sim.integrator() {
+            match $crate::simulation::SimulationIntegratorRead::integrator(sim) {
                 Some($crate::simulation::Integrator::Ias15) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_ias15();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_ias15(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_ias15 cfg, $field, $value
@@ -24,7 +24,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Whfast) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_whfast();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_whfast(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_whfast cfg, $field, $value
@@ -36,7 +36,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Sei) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_sei();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_sei(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_sei cfg, $field, $value
@@ -48,7 +48,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Leapfrog) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_leapfrog();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_leapfrog(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_leapfrog cfg, $field, $value
@@ -60,7 +60,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Janus) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_janus();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_janus(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_janus cfg, $field, $value
@@ -72,7 +72,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Mercurius) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_mercurius();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_mercurius(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_mercurius cfg, $field, $value
@@ -84,7 +84,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Saba) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_saba();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_saba(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_saba cfg, $field, $value
@@ -96,7 +96,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Eos) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_eos();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_eos(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_eos cfg, $field, $value
@@ -108,7 +108,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Bs) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_bs();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_bs(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_bs cfg, $field, $value
@@ -120,7 +120,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Whfast512) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_whfast512();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_whfast512(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_whfast512 cfg, $field, $value
@@ -132,7 +132,7 @@ macro_rules! _reb_simulation_set_integrator_config {
                 }
                 Some($crate::simulation::Integrator::Trace) => {
                     #[allow(unused_assignments)]
-                    let mut cfg = sim.ri_trace();
+                    let mut cfg = $crate::simulation::SimulationIntegratorWrite::ri_trace(sim);
                     $(
                         cfg = $crate::_reb_simulation_set_integrator_config!(
                             @apply_trace cfg, $field, $value
