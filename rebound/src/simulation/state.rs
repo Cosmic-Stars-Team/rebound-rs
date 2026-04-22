@@ -1,5 +1,52 @@
-use super::SimulationRead;
+use std::os::raw::c_int;
+
+use crate::particles::ParticleRef;
+
+use super::{SimulationRead, SimulationRef, SimulationRefMut};
 use rebound_bind as rb;
+
+pub type SimulationCallback = dyn for<'a> FnMut(SimulationRefMut<'a>) + 'static;
+pub type SimulationKeyCallback = dyn for<'a> FnMut(SimulationRefMut<'a>, c_int) -> c_int + 'static;
+pub type SimulationRestitutionCallback = dyn for<'a> FnMut(SimulationRef<'a>, f64) -> f64 + 'static;
+pub type SimulationCollisionResolveCallback =
+    dyn for<'a> FnMut(SimulationRefMut<'a>, rb::reb_collision) -> rb::REB_COLLISION_RESOLVE_OUTCOME
+        + 'static;
+pub type ParticleCallback = dyn for<'a> FnMut(ParticleRef<'a>) + 'static;
+
+#[allow(dead_code)]
+/// Rust-owned state associated with a pinned simulation.
+///
+/// REBOUND stores raw C function pointers in `reb_simulation`, so any safe Rust
+/// callback that captures environment has to live outside the C struct. The
+/// trampoline can then recover this state through the enclosing `_Simulation`.
+#[derive(Default)]
+pub struct SimulationState {
+    pub(crate) additional_forces: Option<Box<SimulationCallback>>,
+    pub(crate) pre_timestep_modifications: Option<Box<SimulationCallback>>,
+    pub(crate) post_timestep_modifications: Option<Box<SimulationCallback>>,
+    pub(crate) heartbeat: Option<Box<SimulationCallback>>,
+    pub(crate) key_callback: Option<Box<SimulationKeyCallback>>,
+    pub(crate) coefficient_of_restitution: Option<Box<SimulationRestitutionCallback>>,
+    pub(crate) collision_resolve: Option<Box<SimulationCollisionResolveCallback>>,
+    pub(crate) free_particle_ap: Option<Box<ParticleCallback>>,
+    pub(crate) extras_cleanup: Option<Box<SimulationCallback>>,
+}
+
+impl SimulationState {
+    pub const fn new() -> Self {
+        Self {
+            additional_forces: None,
+            pre_timestep_modifications: None,
+            post_timestep_modifications: None,
+            heartbeat: None,
+            key_callback: None,
+            coefficient_of_restitution: None,
+            collision_resolve: None,
+            free_particle_ap: None,
+            extras_cleanup: None,
+        }
+    }
+}
 
 pub trait SimulationStateRead: SimulationRead {
     fn t(&self) -> f64 {

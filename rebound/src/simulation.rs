@@ -1,6 +1,7 @@
 mod domain;
 mod integrator;
 mod particles;
+mod reference;
 mod settings;
 mod state;
 mod traits;
@@ -9,6 +10,7 @@ mod transfer;
 pub use domain::*;
 pub use integrator::*;
 pub use particles::*;
+pub use reference::*;
 pub use settings::*;
 pub use state::*;
 pub use traits::*;
@@ -31,7 +33,10 @@ pub struct Simulation {
 
 #[repr(C)]
 pub(crate) struct _Simulation {
+    // `raw` must remain the first field so callback trampolines can cast a
+    // `*mut reb_simulation` back to `*mut _Simulation`.
     pub(crate) raw: rb::reb_simulation,
+    pub(crate) state: state::SimulationState,
     _pin: PhantomPinned,
 }
 
@@ -40,8 +45,27 @@ impl _Simulation {
         Self {
             // SAFETY: REBOUND initializes `reb_simulation` from a zeroed allocation.
             raw: unsafe { MaybeUninit::<rb::reb_simulation>::zeroed().assume_init() },
+            state: state::SimulationState::new(),
             _pin: PhantomPinned,
         }
+    }
+
+    pub(crate) fn sim_ref(&self) -> SimulationRef<'_> {
+        SimulationRef::new(self)
+    }
+
+    pub(crate) fn sim_mut(self: Pin<&mut Self>) -> SimulationRefMut<'_> {
+        SimulationRefMut::new(self)
+    }
+
+    #[allow(dead_code)]
+    pub(crate) unsafe fn from_raw<'a>(raw: *const rb::reb_simulation) -> &'a Self {
+        unsafe { &*raw.cast() }
+    }
+
+    #[allow(dead_code)]
+    pub(crate) unsafe fn from_raw_mut<'a>(raw: *mut rb::reb_simulation) -> Pin<&'a mut Self> {
+        unsafe { Pin::new_unchecked(&mut *raw.cast()) }
     }
 }
 
@@ -61,6 +85,14 @@ impl Drop for Simulation {
 }
 
 impl Simulation {
+    pub fn as_ref(&self) -> SimulationRef<'_> {
+        self._owned().sim_ref()
+    }
+
+    pub fn as_mut(&mut self) -> SimulationRefMut<'_> {
+        self._owned_mut().sim_mut()
+    }
+
     pub(crate) fn _owned(&self) -> &_Simulation {
         self._owned.as_ref().get_ref()
     }
