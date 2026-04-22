@@ -16,7 +16,6 @@ license = "GPL-3.0"
 thiserror = "2"
 
 bindgen = "0.72.1"
-libc = "0.2"
 cc = "1"
 
 rebound = { path = "./rebound" }

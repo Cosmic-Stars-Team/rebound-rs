@@ -9,7 +9,10 @@ pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
 pub use reference::ParticleRef;
 
 use crate::types::Vec3d;
-use crate::{Result, simulation::Simulation};
+use crate::{
+    Result,
+    simulation::{SimulationParticlesRead, SimulationSettingsRead, SimulationStateRead},
+};
 
 #[doc(hidden)]
 pub use builder::_set_particle_hash;
@@ -66,6 +69,9 @@ impl From<Particle> for rb::reb_particle {
 
 #[doc(hidden)]
 pub trait ParticleBuilder {
-    fn with_simulation_defaults(self, simulation: &Simulation) -> Self;
+    fn with_simulation_defaults<S>(self, simulation: &S) -> Self
+    where
+        S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized;
+
     fn build(self) -> Result<Particle>;
 }

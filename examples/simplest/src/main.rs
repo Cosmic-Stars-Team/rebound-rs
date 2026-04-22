@@ -1,22 +1,28 @@
-use rebound::{Result, create_particle, simulation::Simulation};
+use rebound::{
+    Result, create_particle,
+    simulation::{
+        Simulation, SimulationIntegratorWrite, SimulationParticlesRead, SimulationParticlesWrite,
+        SimulationSettingsRead, SimulationStateRead,
+    },
+};
 
 fn main() -> Result<()> {
     // This example is ported from the C version of REBOUND.
     // https://github.com/hannorein/rebound/blob/main/examples/simplest/problem.c
 
-    let mut r = Simulation::try_new()?
-        .add_particle(create_particle! {
-            mass: 1.
-        })?
-        .add_particle(create_particle! {
-            mass: 1e-3,
-            a: 1.,
-            e: 0.1,
-        })?
-        .add_particle(create_particle! {
-            a: 1.4,
-            e: 0.1,
-        })?;
+    let mut r = Simulation::new();
+    r.add_particle(create_particle! {
+        mass: 1.
+    })?
+    .add_particle(create_particle! {
+        mass: 1e-3,
+        a: 1.,
+        e: 0.1,
+    })?
+    .add_particle(create_particle! {
+        a: 1.4,
+        e: 0.1,
+    })?;
 
     r.integrate(100.)?;
 

@@ -1,7 +1,5 @@
 use rebound_bind as rb;
 
-use crate::simulation::Simulation;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Kernel {
     Default = rb::reb_integrator_whfast_REB_WHFAST_KERNEL_DEFAULT as isize,
@@ -73,7 +71,7 @@ impl Coordinates {
 
 pub struct IntegratorWhfast<'a> {
     pub(crate) inner: *mut rb::reb_integrator_whfast,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
 
 impl<'a> IntegratorWhfast<'a> {

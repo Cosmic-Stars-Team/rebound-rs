@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 use rebound::{
     Error, Result, create_particle,
-    simulation::Simulation,
+    simulation::{Simulation, SimulationParticlesRead, SimulationParticlesWrite},
     types::{Rotation, Vec3d},
 };
 
@@ -31,16 +31,16 @@ fn main() -> Result<()> {
     .irotate(r1);
 
     // You can also rotate all the particles in a simulation:
-    let sim = Simulation::try_new()?
-        .add_particle(create_particle! {
-            mass: 1.
-        })?
-        .add_particle(create_particle! {
-            mass: 1e-3,
-            a: 1.,
-            e: 0.1
-        })?
-        .irotate(r1);
+    let mut sim = Simulation::new();
+    sim.add_particle(create_particle! {
+        mass: 1.
+    })?
+    .add_particle(create_particle! {
+        mass: 1e-3,
+        a: 1.,
+        e: 0.1
+    })?
+    .irotate(r1);
     drop(sim);
 
     // You can chain rotations by multiplying them together.
@@ -62,21 +62,21 @@ fn main() -> Result<()> {
     let r_orbit =
         Rotation::init_orbit(ascending_node_longitude, inclination, argument_of_periapsis);
 
-    let sim = Simulation::try_new()?
-        .add_particle(create_particle! {
-            mass: 1.
-        })?
-        .add_particle(create_particle! {
-            a: 1.,
-            e: 0.001,
-        })?
-        .add_particle(create_particle! {
-            a: 1.,
-            e: 0.001,
-            Omega: ascending_node_longitude,
-            inc: inclination,
-            omega: argument_of_periapsis,
-        })?;
+    let mut sim = Simulation::new();
+    sim.add_particle(create_particle! {
+        mass: 1.
+    })?
+    .add_particle(create_particle! {
+        a: 1.,
+        e: 0.001,
+    })?
+    .add_particle(create_particle! {
+        a: 1.,
+        e: 0.001,
+        Omega: ascending_node_longitude,
+        inc: inclination,
+        omega: argument_of_periapsis,
+    })?;
 
     // REBOUND also comes with a built-in constructor that generates a rotation which rotates a given vector to a new vector. For example:
     let mut p1 = sim

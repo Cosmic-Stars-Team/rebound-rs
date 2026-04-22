@@ -1,10 +1,8 @@
 use rebound_bind as rb;
 
-use crate::simulation::Simulation;
-
 pub struct IntegratorJanus<'a> {
     pub(crate) inner: *mut rb::reb_integrator_janus,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
 
 impl<'a> IntegratorJanus<'a> {

@@ -1,7 +1,5 @@
 use rebound_bind as rb;
 
-use crate::simulation::Simulation;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AdaptiveMode {
     Individual = rb::reb_integrator_ias15_REB_IAS15_INDIVIDUAL as isize,
@@ -35,7 +33,7 @@ impl AdaptiveMode {
 
 pub struct IntegratorIas15<'a> {
     pub(crate) inner: *mut rb::reb_integrator_ias15,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
 
 impl<'a> IntegratorIas15<'a> {

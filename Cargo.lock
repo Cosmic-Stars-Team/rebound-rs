@@ -855,7 +855,6 @@ dependencies = [
 name = "rebound"
 version = "4.6.0"
 dependencies = [
- "libc",
  "rebound-bind",
  "thiserror",
 ]

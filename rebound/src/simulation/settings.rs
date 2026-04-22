@@ -1,6 +1,6 @@
 use crate::error::{Result, SetError};
 
-use super::Simulation;
+use super::{SimulationRead, SimulationWrite};
 use rebound_bind as rb;
 
 // TODO: Confirm that the verification boundaries are accurate.
@@ -110,95 +110,97 @@ impl Gravity {
     }
 }
 
-impl Simulation {
-    pub fn g(&self) -> f64 {
-        unsafe { (*self.inner).G }
+pub trait SimulationSettingsRead: SimulationRead {
+    fn g(&self) -> f64 {
+        unsafe { (*self.raw()).G }
     }
 
-    pub fn softening(&self) -> f64 {
-        unsafe { (*self.inner).softening }
+    fn softening(&self) -> f64 {
+        unsafe { (*self.raw()).softening }
     }
 
-    pub fn dt(&self) -> f64 {
-        unsafe { (*self.inner).dt }
+    fn dt(&self) -> f64 {
+        unsafe { (*self.raw()).dt }
     }
 
-    pub fn n_active(&self) -> i32 {
-        unsafe { (*self.inner).N_active }
+    fn n_active(&self) -> i32 {
+        unsafe { (*self.raw()).N_active }
     }
 
-    pub fn testparticle_type(&self) -> i32 {
-        unsafe { (*self.inner).testparticle_type }
+    fn testparticle_type(&self) -> i32 {
+        unsafe { (*self.raw()).testparticle_type }
     }
 
-    pub fn testparticle_hidewarnings(&self) -> bool {
-        unsafe { (*self.inner).testparticle_hidewarnings != 0 }
+    fn testparticle_hidewarnings(&self) -> bool {
+        unsafe { (*self.raw()).testparticle_hidewarnings != 0 }
     }
 
-    pub fn opening_angle2(&self) -> f64 {
-        unsafe { (*self.inner).opening_angle2 }
+    fn opening_angle2(&self) -> f64 {
+        unsafe { (*self.raw()).opening_angle2 }
     }
 
-    pub fn exact_finish_time(&self) -> bool {
-        unsafe { (*self.inner).exact_finish_time != 0 }
+    fn exact_finish_time(&self) -> bool {
+        unsafe { (*self.raw()).exact_finish_time != 0 }
     }
 
-    pub fn boundary(&self) -> Option<Boundary> {
-        unsafe { Boundary::from_raw((*self.inner).boundary) }
+    fn boundary(&self) -> Option<Boundary> {
+        unsafe { Boundary::from_raw((*self.raw()).boundary) }
     }
 
-    pub fn gravity(&self) -> Option<Gravity> {
-        unsafe { Gravity::from_raw((*self.inner).gravity) }
+    fn gravity(&self) -> Option<Gravity> {
+        unsafe { Gravity::from_raw((*self.raw()).gravity) }
     }
 
-    pub fn collision(&self) -> Option<Collision> {
-        unsafe { Collision::from_raw((*self.inner).collision) }
+    fn collision(&self) -> Option<Collision> {
+        unsafe { Collision::from_raw((*self.raw()).collision) }
     }
 
-    pub fn force_is_velocity_dependent(&self) -> bool {
-        unsafe { (*self.inner).force_is_velocity_dependent != 0 }
+    fn force_is_velocity_dependent(&self) -> bool {
+        unsafe { (*self.raw()).force_is_velocity_dependent != 0 }
     }
 
-    pub fn gravity_ignore_terms(&self) -> u32 {
-        unsafe { (*self.inner).gravity_ignore_terms }
+    fn gravity_ignore_terms(&self) -> u32 {
+        unsafe { (*self.raw()).gravity_ignore_terms }
     }
 
-    pub fn exit_max_distance(&self) -> f64 {
-        unsafe { (*self.inner).exit_max_distance }
+    fn exit_max_distance(&self) -> f64 {
+        unsafe { (*self.raw()).exit_max_distance }
     }
 
-    pub fn exit_min_distance(&self) -> f64 {
-        unsafe { (*self.inner).exit_min_distance }
+    fn exit_min_distance(&self) -> f64 {
+        unsafe { (*self.raw()).exit_min_distance }
     }
 
-    pub fn usleep(&self) -> f64 {
-        unsafe { (*self.inner).usleep }
+    fn usleep(&self) -> f64 {
+        unsafe { (*self.raw()).usleep }
     }
 
-    pub fn track_energy_offset(&self) -> bool {
-        unsafe { (*self.inner).track_energy_offset != 0 }
+    fn track_energy_offset(&self) -> bool {
+        unsafe { (*self.raw()).track_energy_offset != 0 }
     }
 
-    pub fn collision_resolve_keep_sorted(&self) -> bool {
-        unsafe { (*self.inner).collision_resolve_keep_sorted != 0 }
+    fn collision_resolve_keep_sorted(&self) -> bool {
+        unsafe { (*self.raw()).collision_resolve_keep_sorted != 0 }
     }
 
-    pub fn minimum_collision_velocity(&self) -> f64 {
-        unsafe { (*self.inner).minimum_collision_velocity }
+    fn minimum_collision_velocity(&self) -> f64 {
+        unsafe { (*self.raw()).minimum_collision_velocity }
     }
 
-    pub fn rand_seed(&self) -> u32 {
-        unsafe { (*self.inner).rand_seed }
+    fn rand_seed(&self) -> u32 {
+        unsafe { (*self.raw()).rand_seed }
     }
+}
 
-    pub fn set_g(self, g: f64) -> Self {
+pub trait SimulationSettingsWrite: SimulationSettingsRead + SimulationWrite {
+    fn set_g(&mut self, g: f64) -> &mut Self {
         unsafe {
-            (*self.inner).G = g;
+            (*self.raw_mut()).G = g;
         }
         self
     }
 
-    pub fn set_softening(self, softening: f64) -> Result<Self> {
+    fn set_softening(&mut self, softening: f64) -> Result<&mut Self> {
         if !softening.is_finite() {
             return Err(
                 SetError::invalid("softening", format!("must be finite, got {softening}")).into(),
@@ -210,12 +212,12 @@ impl Simulation {
             );
         }
         unsafe {
-            (*self.inner).softening = softening;
+            (*self.raw_mut()).softening = softening;
         }
         Ok(self)
     }
 
-    pub fn set_dt(self, dt: f64) -> Result<Self> {
+    fn set_dt(&mut self, dt: f64) -> Result<&mut Self> {
         if !dt.is_finite() {
             return Err(SetError::invalid("dt", format!("must be finite, got {dt}")).into());
         }
@@ -223,12 +225,12 @@ impl Simulation {
             return Err(SetError::invalid("dt", "must be non-zero").into());
         }
         unsafe {
-            (*self.inner).dt = dt;
+            (*self.raw_mut()).dt = dt;
         }
         Ok(self)
     }
 
-    pub fn set_testparticle_type(self, testparticle_type: i32) -> Result<Self> {
+    fn set_testparticle_type(&mut self, testparticle_type: i32) -> Result<&mut Self> {
         if !(0..=1).contains(&testparticle_type) {
             return Err(SetError::invalid(
                 "testparticle_type",
@@ -237,12 +239,12 @@ impl Simulation {
             .into());
         }
         unsafe {
-            (*self.inner).testparticle_type = testparticle_type;
+            (*self.raw_mut()).testparticle_type = testparticle_type;
         }
         Ok(self)
     }
 
-    pub fn set_opening_angle2(self, opening_angle2: f64) -> Result<Self> {
+    fn set_opening_angle2(&mut self, opening_angle2: f64) -> Result<&mut Self> {
         if !opening_angle2.is_finite() {
             return Err(SetError::invalid(
                 "opening_angle2",
@@ -258,20 +260,20 @@ impl Simulation {
             .into());
         }
         unsafe {
-            (*self.inner).opening_angle2 = opening_angle2;
+            (*self.raw_mut()).opening_angle2 = opening_angle2;
         }
         Ok(self)
     }
 
-    pub fn set_exact_finish_time(self, exact_finish_time: bool) -> Self {
+    fn set_exact_finish_time(&mut self, exact_finish_time: bool) -> &mut Self {
         unsafe {
-            (*self.inner).exact_finish_time = if exact_finish_time { 1 } else { 0 };
+            (*self.raw_mut()).exact_finish_time = if exact_finish_time { 1 } else { 0 };
         }
         self
     }
 
-    pub fn set_n_active(self, n_active: i32) -> Result<Self> {
-        let n_real = unsafe { i64::from((*self.inner).N) - i64::from((*self.inner).N_var) };
+    fn set_n_active(&mut self, n_active: i32) -> Result<&mut Self> {
+        let n_real = unsafe { i64::from((*self.raw()).N) - i64::from((*self.raw()).N_var) };
         if n_real < 0 {
             return Err(SetError::invalid(
                 "n_active",
@@ -290,40 +292,40 @@ impl Simulation {
             }
         }
         unsafe {
-            (*self.inner).N_active = n_active;
+            (*self.raw_mut()).N_active = n_active;
         }
         Ok(self)
     }
 
-    pub fn set_boundary(self, boundary: Boundary) -> Self {
+    fn set_boundary(&mut self, boundary: Boundary) -> &mut Self {
         unsafe {
-            (*self.inner).boundary = boundary.into();
+            (*self.raw_mut()).boundary = boundary.into();
         }
         self
     }
 
-    pub fn set_gravity(self, gravity: Gravity) -> Self {
+    fn set_gravity(&mut self, gravity: Gravity) -> &mut Self {
         unsafe {
-            (*self.inner).gravity = gravity.into();
+            (*self.raw_mut()).gravity = gravity.into();
         }
         self
     }
 
-    pub fn set_collision(self, collision: Collision) -> Self {
+    fn set_collision(&mut self, collision: Collision) -> &mut Self {
         unsafe {
-            (*self.inner).collision = collision.into();
+            (*self.raw_mut()).collision = collision.into();
         }
         self
     }
 
-    pub fn set_force_is_velocity_dependent(self, velocity_dependent: bool) -> Self {
+    fn set_force_is_velocity_dependent(&mut self, velocity_dependent: bool) -> &mut Self {
         unsafe {
-            (*self.inner).force_is_velocity_dependent = if velocity_dependent { 1 } else { 0 };
+            (*self.raw_mut()).force_is_velocity_dependent = if velocity_dependent { 1 } else { 0 };
         }
         self
     }
 
-    pub fn set_gravity_ignore_terms(self, gravity_ignore_terms: u32) -> Result<Self> {
+    fn set_gravity_ignore_terms(&mut self, gravity_ignore_terms: u32) -> Result<&mut Self> {
         if gravity_ignore_terms > 2 {
             return Err(SetError::invalid(
                 "gravity_ignore_terms",
@@ -332,12 +334,12 @@ impl Simulation {
             .into());
         }
         unsafe {
-            (*self.inner).gravity_ignore_terms = gravity_ignore_terms;
+            (*self.raw_mut()).gravity_ignore_terms = gravity_ignore_terms;
         }
         Ok(self)
     }
 
-    pub fn set_exit_max_distance(self, exit_max_distance: f64) -> Result<Self> {
+    fn set_exit_max_distance(&mut self, exit_max_distance: f64) -> Result<&mut Self> {
         if !exit_max_distance.is_finite() {
             return Err(SetError::invalid(
                 "exit_max_distance",
@@ -353,12 +355,12 @@ impl Simulation {
             .into());
         }
         unsafe {
-            (*self.inner).exit_max_distance = exit_max_distance;
+            (*self.raw_mut()).exit_max_distance = exit_max_distance;
         }
         Ok(self)
     }
 
-    pub fn set_exit_min_distance(self, exit_min_distance: f64) -> Result<Self> {
+    fn set_exit_min_distance(&mut self, exit_min_distance: f64) -> Result<&mut Self> {
         if !exit_min_distance.is_finite() {
             return Err(SetError::invalid(
                 "exit_min_distance",
@@ -374,12 +376,12 @@ impl Simulation {
             .into());
         }
         unsafe {
-            (*self.inner).exit_min_distance = exit_min_distance;
+            (*self.raw_mut()).exit_min_distance = exit_min_distance;
         }
         Ok(self)
     }
 
-    pub fn set_usleep(self, usleep: f64) -> Result<Self> {
+    fn set_usleep(&mut self, usleep: f64) -> Result<&mut Self> {
         if !usleep.is_finite() {
             return Err(
                 SetError::invalid("usleep", format!("must be finite, got {usleep}")).into(),
@@ -389,26 +391,29 @@ impl Simulation {
             return Err(SetError::invalid("usleep", format!("must be >= 0, got {usleep}")).into());
         }
         unsafe {
-            (*self.inner).usleep = usleep;
+            (*self.raw_mut()).usleep = usleep;
         }
         Ok(self)
     }
 
-    pub fn set_track_energy_offset(self, track_energy_offset: bool) -> Self {
+    fn set_track_energy_offset(&mut self, track_energy_offset: bool) -> &mut Self {
         unsafe {
-            (*self.inner).track_energy_offset = if track_energy_offset { 1 } else { 0 };
+            (*self.raw_mut()).track_energy_offset = if track_energy_offset { 1 } else { 0 };
         }
         self
     }
 
-    pub fn set_collision_resolve_keep_sorted(self, keep_sorted: bool) -> Self {
+    fn set_collision_resolve_keep_sorted(&mut self, keep_sorted: bool) -> &mut Self {
         unsafe {
-            (*self.inner).collision_resolve_keep_sorted = if keep_sorted { 1 } else { 0 };
+            (*self.raw_mut()).collision_resolve_keep_sorted = if keep_sorted { 1 } else { 0 };
         }
         self
     }
 
-    pub fn set_minimum_collision_velocity(self, minimum_collision_velocity: f64) -> Result<Self> {
+    fn set_minimum_collision_velocity(
+        &mut self,
+        minimum_collision_velocity: f64,
+    ) -> Result<&mut Self> {
         if !minimum_collision_velocity.is_finite() {
             return Err(SetError::invalid(
                 "minimum_collision_velocity",
@@ -424,28 +429,32 @@ impl Simulation {
             .into());
         }
         unsafe {
-            (*self.inner).minimum_collision_velocity = minimum_collision_velocity;
+            (*self.raw_mut()).minimum_collision_velocity = minimum_collision_velocity;
         }
         Ok(self)
     }
 
-    pub fn set_rand_seed(self, rand_seed: u32) -> Self {
+    fn set_rand_seed(&mut self, rand_seed: u32) -> &mut Self {
         unsafe {
-            (*self.inner).rand_seed = rand_seed;
+            (*self.raw_mut()).rand_seed = rand_seed;
         }
         self
     }
 }
 
+impl<T: SimulationRead + ?Sized> SimulationSettingsRead for T {}
+impl<T: SimulationWrite + ?Sized> SimulationSettingsWrite for T {}
+
 #[cfg(test)]
 mod tests {
-    use super::{Boundary, Collision, Gravity, Simulation};
+    use super::{Boundary, Collision, Gravity, SimulationSettingsRead, SimulationSettingsWrite};
+    use crate::simulation::Simulation;
     use rebound_bind as rb;
 
     #[test]
     fn simulation_setting_roundtrips_use_raw_bindgen_types() {
-        let sim = Simulation::new()
-            .set_boundary(Boundary::Periodic)
+        let mut sim = Simulation::new();
+        sim.set_boundary(Boundary::Periodic)
             .set_gravity(Gravity::Trace)
             .set_collision(Collision::LineTree);
 

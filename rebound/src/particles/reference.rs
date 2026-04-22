@@ -1,15 +1,16 @@
+use core::marker::PhantomData;
+
 use rebound_bind as rb;
 
 use crate::{
     particles::{Orbit, Particle},
-    simulation::Simulation,
     types::{Rotation, Vec3d},
     utils,
 };
 
 pub struct ParticleRef<'a> {
     pub(crate) inner: *mut rb::reb_particle,
-    pub(crate) _sim: &'a Simulation,
+    pub(crate) _marker: PhantomData<&'a ()>,
 }
 
 impl<'a> ParticleRef<'a> {
@@ -87,6 +88,29 @@ impl<'a> ParticleRef<'a> {
         Some(Vec3d(particle.ax, particle.ay, particle.az))
     }
 
+    pub fn set_ax(&mut self, ax: f64) -> Option<()> {
+        self.particle_mut()?.ax = ax;
+        Some(())
+    }
+
+    pub fn set_ay(&mut self, ay: f64) -> Option<()> {
+        self.particle_mut()?.ay = ay;
+        Some(())
+    }
+
+    pub fn set_az(&mut self, az: f64) -> Option<()> {
+        self.particle_mut()?.az = az;
+        Some(())
+    }
+
+    pub fn set_acceleration(&mut self, ax: f64, ay: f64, az: f64) -> Option<()> {
+        let particle = self.particle_mut()?;
+        particle.ax = ax;
+        particle.ay = ay;
+        particle.az = az;
+        Some(())
+    }
+
     pub fn mass(&self) -> Option<f64> {
         Some(self.particle()?.m)
     }
@@ -150,21 +174,25 @@ impl<'a> From<ParticleRef<'a>> for Particle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{create_particle, simulation::Simulation, types::Vec3d};
+    use crate::{
+        create_particle,
+        simulation::{Simulation, SimulationParticlesRead, SimulationParticlesWrite},
+        types::Vec3d,
+    };
 
     #[test]
     fn setters_update_particle_fields() {
-        let sim = Simulation::new()
-            .add_particle(create_particle! {
-                mass: 1.0,
-                x: 1.0,
-                y: 2.0,
-                z: 3.0,
-                vx: 4.0,
-                vy: 5.0,
-                vz: 6.0,
-            })
-            .unwrap();
+        let mut sim = Simulation::new();
+        sim.add_particle(create_particle! {
+            mass: 1.0,
+            x: 1.0,
+            y: 2.0,
+            z: 3.0,
+            vx: 4.0,
+            vy: 5.0,
+            vz: 6.0,
+        })
+        .unwrap();
 
         {
             let mut particle = sim.get_particle(0).unwrap();
@@ -173,6 +201,10 @@ mod tests {
             particle.set_radius(0.1).unwrap();
             particle.set_position(7.0, 8.0, 9.0).unwrap();
             particle.set_velocity(1.1, 1.2, 1.3).unwrap();
+            particle.set_ax(0.1).unwrap();
+            particle.set_ay(0.2).unwrap();
+            particle.set_az(0.3).unwrap();
+            particle.set_acceleration(2.1, 2.2, 2.3).unwrap();
         }
 
         let particle = sim.get_particle(0).unwrap();
@@ -181,5 +213,6 @@ mod tests {
         assert_eq!(particle.radius(), Some(0.1));
         assert_eq!(particle.position(), Some(Vec3d(7.0, 8.0, 9.0)));
         assert_eq!(particle.velocity(), Some(Vec3d(1.1, 1.2, 1.3)));
+        assert_eq!(particle.acceleration(), Some(Vec3d(2.1, 2.2, 2.3)));
     }
 }
