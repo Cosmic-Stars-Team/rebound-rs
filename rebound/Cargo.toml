@@ -8,5 +8,3 @@ license.workspace = true
 rebound-bind.workspace = true
 
 thiserror.workspace = true
-
-libc.workspace = true
