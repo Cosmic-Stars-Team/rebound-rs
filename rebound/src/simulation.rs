@@ -5,6 +5,7 @@ mod particles;
 mod reference;
 mod settings;
 mod state;
+mod tools;
 mod traits;
 mod transfer;
 
@@ -15,6 +16,7 @@ pub use particles::*;
 pub use reference::*;
 pub use settings::*;
 pub use state::*;
+pub use tools::*;
 pub use traits::*;
 pub use transfer::*;
 
