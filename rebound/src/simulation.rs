@@ -1,6 +1,7 @@
 mod callbacks;
 mod domain;
 mod integrator;
+mod output;
 mod particles;
 mod reference;
 mod settings;
@@ -12,6 +13,7 @@ mod transfer;
 pub use callbacks::*;
 pub use domain::*;
 pub use integrator::*;
+pub use output::*;
 pub use particles::*;
 pub use reference::*;
 pub use settings::*;
