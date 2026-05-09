@@ -24,6 +24,7 @@ pub struct Particle {
     pub radius: f64,
     pub position: Vec3d,
     pub velocity: Vec3d,
+    pub acceleration: Vec3d,
 }
 
 impl Particle {
@@ -40,6 +41,7 @@ impl From<rb::reb_particle> for Particle {
             radius: particle.r,
             position: Vec3d(particle.x, particle.y, particle.z),
             velocity: Vec3d(particle.vx, particle.vy, particle.vz),
+            acceleration: Vec3d(particle.ax, particle.ay, particle.az),
         }
     }
 }
@@ -54,9 +56,9 @@ impl From<Particle> for rb::reb_particle {
             vx: particle.velocity.0,
             vy: particle.velocity.1,
             vz: particle.velocity.2,
-            ax: 0.0,
-            ay: 0.0,
-            az: 0.0,
+            ax: particle.acceleration.0,
+            ay: particle.acceleration.1,
+            az: particle.acceleration.2,
             m: particle.mass,
             r: particle.radius,
             last_collision: 0.0,

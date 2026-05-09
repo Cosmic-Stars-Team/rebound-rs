@@ -48,6 +48,11 @@ impl Particle {
         self
     }
 
+    pub fn set_position_vec3d(mut self, position: Vec3d) -> Self {
+        self.position = position;
+        self
+    }
+
     pub fn set_vx(mut self, vx: f64) -> Self {
         self.velocity.0 = vx;
         self
@@ -68,16 +73,44 @@ impl Particle {
         self
     }
 
+    pub fn set_velocity_vec3d(mut self, velocity: Vec3d) -> Self {
+        self.velocity = velocity;
+        self
+    }
+
+    pub fn set_ax(mut self, ax: f64) -> Self {
+        self.acceleration.0 = ax;
+        self
+    }
+
+    pub fn set_ay(mut self, ay: f64) -> Self {
+        self.acceleration.1 = ay;
+        self
+    }
+
+    pub fn set_az(mut self, az: f64) -> Self {
+        self.acceleration.2 = az;
+        self
+    }
+
+    pub fn set_acceleration(mut self, ax: f64, ay: f64, az: f64) -> Self {
+        self.acceleration = Vec3d(ax, ay, az);
+        self
+    }
+
+    pub fn set_acceleration_vec3d(mut self, acceleration: Vec3d) -> Self {
+        self.acceleration = acceleration;
+        self
+    }
+
     pub fn irotate(self, rotation: Rotation) -> Self {
         let mut pos = self.position;
         pos.irotate(rotation);
-        self.set_position(pos.0, pos.1, pos.2);
+        let particle = self.set_position_vec3d(pos);
 
-        let mut vel = self.velocity;
+        let mut vel = particle.velocity;
         vel.irotate(rotation);
-        self.set_velocity(vel.0, vel.1, vel.2);
-
-        self
+        particle.set_velocity_vec3d(vel)
     }
 
     pub fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
@@ -223,6 +256,25 @@ macro_rules! create_particle {
         )
     };
 
+    (@mark_cartesian
+        [$($fields:tt)*]
+        [$($cartesian:tt)*]
+        [$($orbit:tt)*]
+        [$($pal:tt)*]
+        [$($classical:tt)*]
+        $($rest:tt)*
+    ) => {
+        $crate::create_particle!(
+            @detect
+            [$($fields)*]
+            [cartesian $($cartesian)*]
+            [$($orbit)*]
+            [$($pal)*]
+            [$($classical)*]
+            $($rest)*
+        )
+    };
+
     (@detect
         [$($fields:tt)*]
         [$($cartesian:tt)*]
@@ -249,9 +301,9 @@ macro_rules! create_particle {
         x : $value:expr, $($rest:tt)*
     ) => {
         $crate::create_particle!(
-            @detect
+            @mark_cartesian
             [$($fields)* x : $value,]
-            [cartesian $($cartesian)*]
+            [$($cartesian)*]
             [$($orbit)*]
             [$($pal)*]
             [$($classical)*]
@@ -267,9 +319,9 @@ macro_rules! create_particle {
         y : $value:expr, $($rest:tt)*
     ) => {
         $crate::create_particle!(
-            @detect
+            @mark_cartesian
             [$($fields)* y : $value,]
-            [cartesian $($cartesian)*]
+            [$($cartesian)*]
             [$($orbit)*]
             [$($pal)*]
             [$($classical)*]
@@ -285,9 +337,27 @@ macro_rules! create_particle {
         z : $value:expr, $($rest:tt)*
     ) => {
         $crate::create_particle!(
-            @detect
+            @mark_cartesian
             [$($fields)* z : $value,]
-            [cartesian $($cartesian)*]
+            [$($cartesian)*]
+            [$($orbit)*]
+            [$($pal)*]
+            [$($classical)*]
+            $($rest)*
+        )
+    };
+    (@detect
+        [$($fields:tt)*]
+        [$($cartesian:tt)*]
+        [$($orbit:tt)*]
+        [$($pal:tt)*]
+        [$($classical:tt)*]
+        position : $value:expr, $($rest:tt)*
+    ) => {
+        $crate::create_particle!(
+            @mark_cartesian
+            [$($fields)* position : $value,]
+            [$($cartesian)*]
             [$($orbit)*]
             [$($pal)*]
             [$($classical)*]
@@ -303,9 +373,9 @@ macro_rules! create_particle {
         vx : $value:expr, $($rest:tt)*
     ) => {
         $crate::create_particle!(
-            @detect
+            @mark_cartesian
             [$($fields)* vx : $value,]
-            [cartesian $($cartesian)*]
+            [$($cartesian)*]
             [$($orbit)*]
             [$($pal)*]
             [$($classical)*]
@@ -321,9 +391,9 @@ macro_rules! create_particle {
         vy : $value:expr, $($rest:tt)*
     ) => {
         $crate::create_particle!(
-            @detect
+            @mark_cartesian
             [$($fields)* vy : $value,]
-            [cartesian $($cartesian)*]
+            [$($cartesian)*]
             [$($orbit)*]
             [$($pal)*]
             [$($classical)*]
@@ -339,9 +409,99 @@ macro_rules! create_particle {
         vz : $value:expr, $($rest:tt)*
     ) => {
         $crate::create_particle!(
-            @detect
+            @mark_cartesian
             [$($fields)* vz : $value,]
-            [cartesian $($cartesian)*]
+            [$($cartesian)*]
+            [$($orbit)*]
+            [$($pal)*]
+            [$($classical)*]
+            $($rest)*
+        )
+    };
+    (@detect
+        [$($fields:tt)*]
+        [$($cartesian:tt)*]
+        [$($orbit:tt)*]
+        [$($pal:tt)*]
+        [$($classical:tt)*]
+        velocity : $value:expr, $($rest:tt)*
+    ) => {
+        $crate::create_particle!(
+            @mark_cartesian
+            [$($fields)* velocity : $value,]
+            [$($cartesian)*]
+            [$($orbit)*]
+            [$($pal)*]
+            [$($classical)*]
+            $($rest)*
+        )
+    };
+    (@detect
+        [$($fields:tt)*]
+        [$($cartesian:tt)*]
+        [$($orbit:tt)*]
+        [$($pal:tt)*]
+        [$($classical:tt)*]
+        ax : $value:expr, $($rest:tt)*
+    ) => {
+        $crate::create_particle!(
+            @mark_cartesian
+            [$($fields)* ax : $value,]
+            [$($cartesian)*]
+            [$($orbit)*]
+            [$($pal)*]
+            [$($classical)*]
+            $($rest)*
+        )
+    };
+    (@detect
+        [$($fields:tt)*]
+        [$($cartesian:tt)*]
+        [$($orbit:tt)*]
+        [$($pal:tt)*]
+        [$($classical:tt)*]
+        ay : $value:expr, $($rest:tt)*
+    ) => {
+        $crate::create_particle!(
+            @mark_cartesian
+            [$($fields)* ay : $value,]
+            [$($cartesian)*]
+            [$($orbit)*]
+            [$($pal)*]
+            [$($classical)*]
+            $($rest)*
+        )
+    };
+    (@detect
+        [$($fields:tt)*]
+        [$($cartesian:tt)*]
+        [$($orbit:tt)*]
+        [$($pal:tt)*]
+        [$($classical:tt)*]
+        az : $value:expr, $($rest:tt)*
+    ) => {
+        $crate::create_particle!(
+            @mark_cartesian
+            [$($fields)* az : $value,]
+            [$($cartesian)*]
+            [$($orbit)*]
+            [$($pal)*]
+            [$($classical)*]
+            $($rest)*
+        )
+    };
+    (@detect
+        [$($fields:tt)*]
+        [$($cartesian:tt)*]
+        [$($orbit:tt)*]
+        [$($pal:tt)*]
+        [$($classical:tt)*]
+        acceleration : $value:expr, $($rest:tt)*
+    ) => {
+        $crate::create_particle!(
+            @mark_cartesian
+            [$($fields)* acceleration : $value,]
+            [$($cartesian)*]
             [$($orbit)*]
             [$($pal)*]
             [$($classical)*]
@@ -1120,7 +1280,7 @@ macro_rules! create_particle {
         compile_error!(concat!(
             "Unsupported field for create_particle!: ",
             stringify!($field),
-            ". supported fields: simulation, sim, hash, mass, radius, x, y, z, vx, vy, vz, primary, g, semi_major_axis, period, time, eccentricity, inclination, ascending_node_longitude, argument_of_periapsis, periapsis_longitude, true_anomaly, mean_anomaly, eccentric_anomaly, mean_longitude, true_longitude, time_of_periapsis_passage, h, k, ix, iy"
+            ". supported fields: simulation, sim, hash, mass, radius, x, y, z, position, vx, vy, vz, velocity, ax, ay, az, acceleration, primary, g, semi_major_axis, period, time, eccentricity, inclination, ascending_node_longitude, argument_of_periapsis, periapsis_longitude, true_anomaly, mean_anomaly, eccentric_anomaly, mean_longitude, true_longitude, time_of_periapsis_passage, h, k, ix, iy"
         ));
     };
 
@@ -1238,6 +1398,9 @@ macro_rules! create_particle {
     (@set $particle:ident, z, $value:expr) => {
         $particle.set_z($value)
     };
+    (@set $particle:ident, position, $value:expr) => {
+        $particle.set_position_vec3d($value)
+    };
     (@set $particle:ident, vx, $value:expr) => {
         $particle.set_vx($value)
     };
@@ -1247,11 +1410,26 @@ macro_rules! create_particle {
     (@set $particle:ident, vz, $value:expr) => {
         $particle.set_vz($value)
     };
+    (@set $particle:ident, velocity, $value:expr) => {
+        $particle.set_velocity_vec3d($value)
+    };
+    (@set $particle:ident, ax, $value:expr) => {
+        $particle.set_ax($value)
+    };
+    (@set $particle:ident, ay, $value:expr) => {
+        $particle.set_ay($value)
+    };
+    (@set $particle:ident, az, $value:expr) => {
+        $particle.set_az($value)
+    };
+    (@set $particle:ident, acceleration, $value:expr) => {
+        $particle.set_acceleration_vec3d($value)
+    };
     (@set $particle:ident, $field:ident, $value:expr) => {
         compile_error!(concat!(
             "Unsupported field for create_particle!: ",
             stringify!($field),
-            ". supported fields: simulation, sim, hash, mass, radius, x, y, z, vx, vy, vz"
+            ". supported fields: simulation, sim, hash, mass, radius, x, y, z, position, vx, vy, vz, velocity, ax, ay, az, acceleration"
         ));
     };
 
@@ -1439,7 +1617,7 @@ macro_rules! create_particle {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::Vec3d;
+    use crate::{particles::ParticleBuilder, types::Vec3d};
 
     #[test]
     fn macro_test() {
@@ -1454,6 +1632,7 @@ mod tests {
         assert_eq!(p1.mass, 0.0);
         assert_eq!(p1.position, Vec3d(1.0, 2.0, 3.0));
         assert_eq!(p1.velocity, Vec3d(0.1, 0.2, 0.3));
+        assert_eq!(p1.acceleration, Vec3d::default());
 
         let p2 = create_particle! {
             mass: 1.0,
@@ -1461,5 +1640,69 @@ mod tests {
         assert_eq!(p2.mass, 1.0);
         assert_eq!(p2.position, Vec3d(0.0, 0.0, 0.0));
         assert_eq!(p2.velocity, Vec3d(0.0, 0.0, 0.0));
+        assert_eq!(p2.acceleration, Vec3d::default());
+    }
+
+    #[test]
+    fn particle_vec3d_setters_update_vector_fields() {
+        let particle = crate::particles::Particle::new()
+            .set_position_vec3d(Vec3d(1.0, 2.0, 3.0))
+            .set_velocity_vec3d(Vec3d(4.0, 5.0, 6.0))
+            .set_acceleration_vec3d(Vec3d(7.0, 8.0, 9.0));
+
+        assert_eq!(particle.position, Vec3d(1.0, 2.0, 3.0));
+        assert_eq!(particle.velocity, Vec3d(4.0, 5.0, 6.0));
+        assert_eq!(particle.acceleration, Vec3d(7.0, 8.0, 9.0));
+    }
+
+    #[test]
+    fn macro_accepts_vec3d_cartesian_fields() {
+        let particle = create_particle! {
+            position: Vec3d(1.0, 2.0, 3.0),
+            velocity: Vec3d(4.0, 5.0, 6.0),
+            acceleration: Vec3d(7.0, 8.0, 9.0),
+        };
+
+        assert_eq!(particle.position, Vec3d(1.0, 2.0, 3.0));
+        assert_eq!(particle.velocity, Vec3d(4.0, 5.0, 6.0));
+        assert_eq!(particle.acceleration, Vec3d(7.0, 8.0, 9.0));
+    }
+
+    #[test]
+    fn macro_accepts_acceleration_components() {
+        let particle = create_particle! {
+            ax: 1.0,
+            ay: 2.0,
+            az: 3.0,
+        };
+
+        assert_eq!(particle.acceleration, Vec3d(1.0, 2.0, 3.0));
+    }
+
+    #[test]
+    fn orbital_builders_return_particles_with_default_acceleration() {
+        let primary = create_particle! {
+            mass: 1.0,
+        };
+
+        let classical = create_particle! {
+            primary: primary,
+            g: 1.0,
+            time: 0.0,
+            semi_major_axis: 1.0,
+        }
+        .build()
+        .unwrap();
+        assert_eq!(classical.acceleration, Vec3d::default());
+
+        let pal = create_particle! {
+            pal,
+            primary: primary,
+            g: 1.0,
+            semi_major_axis: 1.0,
+        }
+        .build()
+        .unwrap();
+        assert_eq!(pal.acceleration, Vec3d::default());
     }
 }

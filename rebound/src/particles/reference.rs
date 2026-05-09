@@ -55,6 +55,14 @@ impl<'a> ParticleRef<'a> {
         Some(())
     }
 
+    pub fn set_position_vec3d(&mut self, position: Vec3d) -> Option<()> {
+        let particle = self.particle_mut()?;
+        particle.x = position.0;
+        particle.y = position.1;
+        particle.z = position.2;
+        Some(())
+    }
+
     pub fn velocity(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
         Some(Vec3d(particle.vx, particle.vy, particle.vz))
@@ -83,6 +91,14 @@ impl<'a> ParticleRef<'a> {
         Some(())
     }
 
+    pub fn set_velocity_vec3d(&mut self, velocity: Vec3d) -> Option<()> {
+        let particle = self.particle_mut()?;
+        particle.vx = velocity.0;
+        particle.vy = velocity.1;
+        particle.vz = velocity.2;
+        Some(())
+    }
+
     pub fn acceleration(&self) -> Option<Vec3d> {
         let particle = self.particle()?;
         Some(Vec3d(particle.ax, particle.ay, particle.az))
@@ -108,6 +124,14 @@ impl<'a> ParticleRef<'a> {
         particle.ax = ax;
         particle.ay = ay;
         particle.az = az;
+        Some(())
+    }
+
+    pub fn set_acceleration_vec3d(&mut self, acceleration: Vec3d) -> Option<()> {
+        let particle = self.particle_mut()?;
+        particle.ax = acceleration.0;
+        particle.ay = acceleration.1;
+        particle.az = acceleration.2;
         Some(())
     }
 
@@ -200,19 +224,26 @@ mod tests {
             particle.set_mass(2.0).unwrap();
             particle.set_radius(0.1).unwrap();
             particle.set_position(7.0, 8.0, 9.0).unwrap();
+            particle
+                .set_position_vec3d(Vec3d(10.0, 11.0, 12.0))
+                .unwrap();
             particle.set_velocity(1.1, 1.2, 1.3).unwrap();
+            particle.set_velocity_vec3d(Vec3d(4.1, 4.2, 4.3)).unwrap();
             particle.set_ax(0.1).unwrap();
             particle.set_ay(0.2).unwrap();
             particle.set_az(0.3).unwrap();
             particle.set_acceleration(2.1, 2.2, 2.3).unwrap();
+            particle
+                .set_acceleration_vec3d(Vec3d(5.1, 5.2, 5.3))
+                .unwrap();
         }
 
         let particle = sim.get_particle(0).unwrap();
         assert_eq!(particle.hash(), Some(42));
         assert_eq!(particle.mass(), Some(2.0));
         assert_eq!(particle.radius(), Some(0.1));
-        assert_eq!(particle.position(), Some(Vec3d(7.0, 8.0, 9.0)));
-        assert_eq!(particle.velocity(), Some(Vec3d(1.1, 1.2, 1.3)));
-        assert_eq!(particle.acceleration(), Some(Vec3d(2.1, 2.2, 2.3)));
+        assert_eq!(particle.position(), Some(Vec3d(10.0, 11.0, 12.0)));
+        assert_eq!(particle.velocity(), Some(Vec3d(4.1, 4.2, 4.3)));
+        assert_eq!(particle.acceleration(), Some(Vec3d(5.1, 5.2, 5.3)));
     }
 }
