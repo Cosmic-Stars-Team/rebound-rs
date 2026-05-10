@@ -1,1 +1,2 @@
-rebound-src/** linguist-generated=true
+bind/** linguist-generated=true
+Justfile linguist-generated=true
