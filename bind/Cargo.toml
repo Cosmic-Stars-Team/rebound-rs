@@ -7,10 +7,12 @@ description = "Low-level Rust FFI bindings for the REBOUND N-body simulation C l
 repository = "https://github.com/Cosmic-Stars-Team/rebound-rs"
 homepage = "https://github.com/hannorein/rebound"
 documentation = "https://docs.rs/rebound-bind"
+readme = "README.md"
 keywords = ["rebound", "nbody", "astrodynamics", "astronomy"]
 categories = ["science", "aerospace::simulation"]
 links = "rebound"
 include = [
+    "README.md",
     "Cargo.toml",
     "build.rs",
     "src/**",
