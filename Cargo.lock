@@ -173,19 +173,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "rebound"
-version = "4.6.0"
-dependencies = [
- "rebound-bind",
- "thiserror",
-]
-
-[[package]]
 name = "rebound-bind"
 version = "4.6.0"
 dependencies = [
  "bindgen",
  "cc",
+]
+
+[[package]]
+name = "rebound-rs"
+version = "4.6.0-alpha.0"
+dependencies = [
+ "rebound-bind",
+ "thiserror",
 ]
 
 [[package]]
@@ -219,9 +219,9 @@ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
 name = "rotations"
-version = "4.6.0"
+version = "4.6.0-alpha.0"
 dependencies = [
- "rebound",
+ "rebound-rs",
 ]
 
 [[package]]
@@ -238,9 +238,9 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "simplest"
-version = "4.6.0"
+version = "4.6.0-alpha.0"
 dependencies = [
- "rebound",
+ "rebound-rs",
 ]
 
 [[package]]

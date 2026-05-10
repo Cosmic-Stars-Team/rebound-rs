@@ -5,4 +5,4 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-rebound = { path = "../../rebound" }
+rebound = { package = "rebound-rs", path = "../.." }

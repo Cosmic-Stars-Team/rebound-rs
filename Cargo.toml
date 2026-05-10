@@ -1,13 +1,32 @@
+[package]
+name = "rebound-rs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Rust wrapper for the REBOUND N-body simulation library."
+repository = "https://github.com/Cosmic-Stars-Team/rebound-rs"
+homepage = "https://github.com/Cosmic-Stars-Team/rebound-rs"
+documentation = "https://docs.rs/rebound-rs"
+readme = "README.md"
+keywords = ["rebound", "nbody", "astrodynamics", "astronomy"]
+categories = ["science", "aerospace::simulation"]
+include = [
+    "README.md",
+    "LICENSE",
+    "Cargo.toml",
+    "src/**",
+]
+
 [workspace]
 resolver = "3"
 members = [
-    "rebound",
     "bind",
     "examples/*",
 ]
-default-members = ["rebound", "bind"]
+default-members = [".", "bind"]
 
 [workspace.package]
+version = "4.6.0-alpha.0"
 edition = "2024"
 license = "GPL-3.0"
 
@@ -17,5 +36,9 @@ thiserror = "2"
 bindgen = "0.72.1"
 cc = "1"
 
-rebound = { path = "./rebound" }
+rebound-rs = { version = "=4.6.0-alpha.0", path = "." }
 rebound-bind = { version = "=4.6.0", path = "./bind" }
+
+[dependencies]
+rebound-bind.workspace = true
+thiserror.workspace = true
