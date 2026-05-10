@@ -36,38 +36,11 @@ const SOURCES: &[&str] = &[
     "frequency_analysis.c",
 ];
 
-fn env_flag(name: &str) -> bool {
-    matches!(
-        env::var(name).ok().as_deref().map(str::trim),
-        Some("1") | Some("true") | Some("TRUE") | Some("yes") | Some("on")
-    )
-}
-
-fn env_flag_with_default(name: &str, default: bool) -> bool {
-    match env::var(name) {
-        Ok(v) => {
-            let v = v.trim().to_ascii_lowercase();
-            if v.is_empty() {
-                default
-            } else {
-                !matches!(v.as_str(), "0" | "false" | "no" | "off")
-            }
-        }
-        Err(_) => default,
-    }
-}
-
-fn rebound_version() -> String {
-    env::var("CARGO_PKG_VERSION").expect("CARGO_PKG_VERSION not set")
+fn rebound_version() -> &'static str {
+    env!("CARGO_PKG_VERSION")
 }
 
 fn find_libomp_prefix() -> Option<PathBuf> {
-    if let Ok(prefix) = env::var("LIBOMP_PREFIX") {
-        let path = PathBuf::from(prefix);
-        if path.exists() {
-            return Some(path);
-        }
-    }
     let candidates = [
         Path::new("/opt/homebrew/opt/libomp"),
         Path::new("/usr/local/opt/libomp"),
@@ -90,34 +63,20 @@ fn build(manifest_dir: &Path, version: &str) {
     }
 
     println!("cargo:rerun-if-changed={}", rebound_src_dir.display());
-    println!("cargo:rerun-if-env-changed=CARGO_PKG_VERSION");
-    println!("cargo:rerun-if-env-changed=OPENGL");
-    println!("cargo:rerun-if-env-changed=OPENMP");
-    println!("cargo:rerun-if-env-changed=OPENMPCLANG");
-    println!("cargo:rerun-if-env-changed=MPI");
-    println!("cargo:rerun-if-env-changed=AVX512");
-    println!("cargo:rerun-if-env-changed=QUADRUPOLE");
-    println!("cargo:rerun-if-env-changed=PROFILING");
-    println!("cargo:rerun-if-env-changed=FFTW");
-    println!("cargo:rerun-if-env-changed=SERVER");
-    println!("cargo:rerun-if-env-changed=CC");
-    println!("cargo:rerun-if-env-changed=LIBOMP_PREFIX");
-    println!("cargo:rerun-if-env-changed=MPI_CLANG_ARGS");
 
-    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
-    let is_windows = target_os == "windows";
-    let is_linux = target_os == "linux";
-    let is_macos = target_os == "macos";
+    let is_windows = cfg!(target_os = "windows");
+    let is_linux = cfg!(target_os = "linux");
+    let is_macos = cfg!(target_os = "macos");
 
-    let mut opengl = env_flag("OPENGL");
-    let openmp = env_flag("OPENMP");
-    let openmp_clang = env_flag("OPENMPCLANG");
-    let mpi = env_flag("MPI");
-    let avx512 = env_flag("AVX512");
-    let quadrupole = env_flag("QUADRUPOLE");
-    let profiling = env_flag("PROFILING");
-    let fftw = env_flag("FFTW");
-    let server = env_flag_with_default("SERVER", true);
+    let mut opengl = cfg!(feature = "opengl");
+    let openmp = cfg!(feature = "openmp");
+    let openmp_clang = cfg!(feature = "openmp-clang");
+    let mpi = cfg!(feature = "mpi");
+    let avx512 = cfg!(feature = "avx512");
+    let quadrupole = cfg!(feature = "quadrupole");
+    let profiling = cfg!(feature = "profiling");
+    let fftw = cfg!(feature = "fftw");
+    let server = cfg!(feature = "server");
 
     if is_windows {
         if opengl {
@@ -127,13 +86,13 @@ fn build(manifest_dir: &Path, version: &str) {
             opengl = false;
         }
         if mpi {
-            panic!("MPI currently not supported on Windows. Please set MPI=0.");
+            panic!("MPI currently not supported on Windows. Disable the `mpi` feature.");
         }
         if openmp || openmp_clang {
-            panic!("OPENMP currently not supported on Windows. Please set OPENMP=0.");
+            panic!("OPENMP currently not supported on Windows. Disable the `openmp` feature.");
         }
         if avx512 {
-            panic!("AVX512 currently not supported on Windows. Please set AVX512=0.");
+            panic!("AVX512 currently not supported on Windows. Disable the `avx512` feature.");
         }
     }
 
@@ -217,13 +176,9 @@ fn build(manifest_dir: &Path, version: &str) {
     if openmp {
         cc_build.define("OPENMP", None);
         bindgen_defines.push("OPENMP".to_owned());
-        if env::var("CC").ok().as_deref() == Some("icc") {
-            cc_build.flag_if_supported("-openmp");
-            println!("cargo:rustc-link-arg=-openmp");
-        } else {
-            cc_build.flag_if_supported("-fopenmp");
-            println!("cargo:rustc-link-arg=-fopenmp");
-        }
+        cc_build.flag_if_supported("-fopenmp");
+        cc_build.flag_if_supported("-openmp");
+        println!("cargo:rustc-link-arg=-fopenmp");
     } else if openmp_clang {
         cc_build.define("OPENMP", None);
         bindgen_defines.push("OPENMP".to_owned());
@@ -240,7 +195,7 @@ fn build(manifest_dir: &Path, version: &str) {
             }
         } else {
             println!(
-                "cargo:warning=OPENMPCLANG=1 but no LIBOMP_PREFIX found. Set LIBOMP_PREFIX to your libomp install prefix."
+                "cargo:warning=`openmp-clang` feature enabled but no Homebrew libomp prefix was found."
             );
         }
         println!("cargo:rustc-link-lib=omp");
@@ -260,17 +215,6 @@ fn build(manifest_dir: &Path, version: &str) {
     for define in bindgen_defines {
         bindgen_builder = bindgen_builder.clang_arg(format!("-D{define}"));
     }
-    if mpi {
-        if let Ok(extra) = env::var("MPI_CLANG_ARGS") {
-            for arg in extra.split_whitespace() {
-                bindgen_builder = bindgen_builder.clang_arg(arg);
-            }
-        } else {
-            println!(
-                "cargo:warning=MPI=1 but MPI_CLANG_ARGS is unset; set it if bindgen cannot find mpi.h."
-            );
-        }
-    }
 
     let bindings = bindgen_builder
         .generate()
@@ -284,9 +228,8 @@ fn build(manifest_dir: &Path, version: &str) {
 }
 
 fn main() {
-    let manifest_dir =
-        PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"));
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let version = rebound_version();
 
-    build(&manifest_dir, &version);
+    build(&manifest_dir, version);
 }
