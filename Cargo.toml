@@ -19,4 +19,4 @@ bindgen = "0.72.1"
 cc = "1"
 
 rebound = { path = "./rebound" }
-rebound-bind = { path = "./bind" }
+rebound-bind = { version = "=4.6.0", path = "./bind" }
