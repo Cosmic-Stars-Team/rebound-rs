@@ -276,7 +276,8 @@ fn build(manifest_dir: &Path, version: &str) {
         .generate()
         .expect("Unable to generate bindings");
 
-    let out_path = manifest_dir.join("src").join("bindings_gen.rs");
+    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR not set"));
+    let out_path = out_dir.join("bindings_gen.rs");
     bindings
         .write_to_file(out_path)
         .expect("Couldn't write bindings!");

@@ -3,8 +3,5 @@
 
 @bind: bind_rebound
 
-@clean_rebound:
-    {{ if os_family() == "windows" { "if (Test-Path -LiteralPath 'bind/src/bindings_gen.rs') { Remove-Item -LiteralPath 'bind/src/bindings_gen.rs' -Force }" } else { "rm -vf bind/src/bindings_gen.rs" } }}
-
-@clean: clean_rebound
+@clean:
     cargo clean
