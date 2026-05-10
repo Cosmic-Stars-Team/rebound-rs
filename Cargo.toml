@@ -2,10 +2,10 @@
 resolver = "3"
 members = [
     "rebound",
-    "bind/rebound",
+    "bind",
     "examples/*",
 ]
-default-members = ["rebound", "bind/rebound"]
+default-members = ["rebound", "bind"]
 
 [workspace.package]
 version = "4.6.0"
@@ -19,4 +19,4 @@ bindgen = "0.72.1"
 cc = "1"
 
 rebound = { path = "./rebound" }
-rebound-bind = { path = "./bind/rebound" }
+rebound-bind = { path = "./bind" }
