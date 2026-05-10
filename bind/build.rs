@@ -1,13 +1,5 @@
 use std::env;
-use std::error::Error;
-use std::fs;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
-
-use flate2::read::GzDecoder;
-use reqwest::blocking::Client;
-use tar::Archive;
-use tempfile::Builder;
 
 const SOURCES: &[&str] = &[
     "rebound.c",
@@ -86,104 +78,18 @@ fn find_libomp_prefix() -> Option<PathBuf> {
         .map(Path::to_path_buf)
 }
 
-fn vendored_source_matches(target_dir: &Path, version: &str) -> bool {
-    let src_dir = target_dir.join("src");
-    let license_file = target_dir.join("LICENSE");
-    let version_file = target_dir.join(".version");
-
-    src_dir.is_dir()
-        && license_file.is_file()
-        && version_file.is_file()
-        && fs::read_to_string(version_file)
-            .map(|current| current.trim() == version)
-            .unwrap_or(false)
-}
-
-fn vendor(manifest_dir: &Path, version: &str) -> Result<(), Box<dyn Error>> {
-    let target_dir = manifest_dir.join("c_src");
-    if vendored_source_matches(&target_dir, version) {
-        return Ok(());
-    }
-
-    let url = format!("https://github.com/hannorein/rebound/archive/refs/tags/{version}.tar.gz");
-    println!("cargo:warning=Vendoring REBOUND v{version} from {url}");
-
-    let client = Client::builder()
-        .timeout(Duration::from_secs(300))
-        .build()?;
-    let response = client
-        .get(&url)
-        .header("user-agent", "rebound-bind-build-script")
-        .send()?
-        .error_for_status()?;
-
-    let extract_dir = Builder::new()
-        .prefix("rebound-extract-")
-        .tempdir_in(manifest_dir)?;
-    let stage_dir = Builder::new()
-        .prefix("c_src-stage-")
-        .tempdir_in(manifest_dir)?;
-
-    let decoder = GzDecoder::new(response);
-    let mut archive = Archive::new(decoder);
-    archive.unpack(extract_dir.path())?;
-
-    let archive_root = extract_dir.path().join(format!("rebound-{version}"));
-    let source_src_dir = archive_root.join("src");
-    let source_license_file = archive_root.join("LICENSE");
-    if !source_src_dir.is_dir() {
-        return Err(format!(
-            "downloaded archive for REBOUND v{version} is missing src/: {}",
-            source_src_dir.display()
-        )
-        .into());
-    }
-    if !source_license_file.is_file() {
-        return Err(format!(
-            "downloaded archive for REBOUND v{version} is missing LICENSE: {}",
-            source_license_file.display()
-        )
-        .into());
-    }
-
-    fs::rename(&source_src_dir, stage_dir.path().join("src"))?;
-    fs::rename(&source_license_file, stage_dir.path().join("LICENSE"))?;
-    fs::write(stage_dir.path().join(".version"), format!("{version}\n"))?;
-
-    let backup_dir = if target_dir.exists() {
-        let backup_dir = Builder::new()
-            .prefix("c_src-backup-")
-            .tempdir_in(manifest_dir)?;
-        fs::rename(&target_dir, backup_dir.path().join("c_src"))?;
-        Some(backup_dir)
-    } else {
-        None
-    };
-
-    if let Err(error) = fs::rename(stage_dir.path(), &target_dir) {
-        if let Some(backup_dir) = backup_dir.as_ref() {
-            let backup_target = backup_dir.path().join("c_src");
-            if backup_target.exists() {
-                let _ = fs::rename(backup_target, &target_dir);
-            }
-        }
-        return Err(error.into());
-    }
-
-    std::mem::forget(stage_dir);
-    Ok(())
-}
-
 fn build(manifest_dir: &Path, version: &str) {
-    let vendor_dir = manifest_dir.join("c_src");
-    let c_src_dir = vendor_dir.join("src");
-    let rebound_header = c_src_dir.join("rebound.h");
+    let rebound_src_dir = manifest_dir.join("rebound").join("src");
+    let rebound_header = rebound_src_dir.join("rebound.h");
 
-    println!("cargo:rerun-if-changed={}", vendor_dir.display());
-    println!(
-        "cargo:rerun-if-changed={}",
-        vendor_dir.join(".version").display()
-    );
+    if !rebound_header.is_file() {
+        panic!(
+            "missing REBOUND C sources at {}; expected bind/rebound/src/rebound.h",
+            rebound_header.display()
+        );
+    }
+
+    println!("cargo:rerun-if-changed={}", rebound_src_dir.display());
     println!("cargo:rerun-if-env-changed=CARGO_PKG_VERSION");
     println!("cargo:rerun-if-env-changed=OPENGL");
     println!("cargo:rerun-if-env-changed=OPENMP");
@@ -232,10 +138,10 @@ fn build(manifest_dir: &Path, version: &str) {
     }
 
     let mut cc_build = cc::Build::new();
-    cc_build.include(&c_src_dir);
+    cc_build.include(&rebound_src_dir);
 
     for source in SOURCES {
-        cc_build.file(c_src_dir.join(source));
+        cc_build.file(rebound_src_dir.join(source));
     }
 
     cc_build.define("_GNU_SOURCE", None);
@@ -346,7 +252,7 @@ fn build(manifest_dir: &Path, version: &str) {
 
     let mut bindgen_builder = bindgen::Builder::default()
         .header(rebound_header.display().to_string())
-        .clang_arg(format!("-I{}", c_src_dir.display()))
+        .clang_arg(format!("-I{}", rebound_src_dir.display()))
         .allowlist_item("^(reb_|REB_).*$")
         .allowlist_item("^_reb_.*$")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
@@ -381,8 +287,5 @@ fn main() {
         PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"));
     let version = rebound_version();
 
-    vendor(&manifest_dir, &version).unwrap_or_else(|error| {
-        panic!("failed to vendor REBOUND v{version}: {error}");
-    });
     build(&manifest_dir, &version);
 }

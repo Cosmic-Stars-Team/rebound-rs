@@ -1,0 +1,4 @@
+[submodule "rebound"]
+    path = bind/rebound
+    url = https://github.com/hannorein/rebound
+    tag = 4.6.0
