@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rebound_bind as rb;
 
 use crate::{
-    particles::{Orbit, Particle},
+    particles::{Orbit, Particle, ParticleRead},
     types::{Rotation, Vec3d},
     utils,
 };
@@ -157,6 +157,10 @@ impl<'a> ParticleRef<'a> {
         Some(self.particle()?.last_collision)
     }
 
+    pub fn snapshot(&self) -> Option<Particle> {
+        self.particle().copied().map(Into::into)
+    }
+
     pub fn is_null(&self) -> bool {
         self.inner.is_null()
     }
@@ -187,6 +191,16 @@ impl<'a> ParticleRef<'a> {
     fn particle_mut(&mut self) -> Option<&mut rb::reb_particle> {
         // Convert nullable raw pointer to mutable reference in one place.
         unsafe { self.inner.as_mut() }
+    }
+}
+
+impl<'a> ParticleRead for ParticleRef<'a> {
+    fn snapshot(&self) -> Option<Particle> {
+        ParticleRef::snapshot(self)
+    }
+
+    fn raw_particle(&self) -> Option<rb::reb_particle> {
+        self.particle().copied()
     }
 }
 
