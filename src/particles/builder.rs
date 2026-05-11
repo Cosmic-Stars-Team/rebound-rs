@@ -1,7 +1,8 @@
 use crate::{
     Result,
     particles::{
-        ClassicalOrbitalElementsBuilder, IntoParticle, PalOrbitalElementsBuilder, Particle,
+        ClassicalOrbitalElementsBuilder, IntoParticle, Orbit, PalOrbitalElementsBuilder, Particle,
+        ParticleRead,
     },
     simulation::{SimulationParticlesRead, SimulationSettingsRead, SimulationStateRead},
     types::{Rotation, Vec3d},
@@ -111,6 +112,10 @@ impl Particle {
         let mut vel = particle.velocity;
         vel.irotate(rotation);
         particle.set_velocity_vec3d(vel)
+    }
+
+    pub fn into_orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
+        Orbit::from_particles(g, self, primary)
     }
 
     pub fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
@@ -1653,6 +1658,25 @@ mod tests {
         assert_eq!(particle.position, Vec3d(1.0, 2.0, 3.0));
         assert_eq!(particle.velocity, Vec3d(4.0, 5.0, 6.0));
         assert_eq!(particle.acceleration, Vec3d(7.0, 8.0, 9.0));
+    }
+
+    #[test]
+    fn particle_into_orbit_accepts_owned_primary() {
+        let primary = create_particle! {
+            mass: 1.0,
+        };
+        let particle = create_particle! {
+            classical,
+            primary: primary,
+            g: 1.0,
+            semi_major_axis: 1.0,
+        }
+        .into_particle()
+        .unwrap();
+
+        let orbit = particle.into_orbit(1.0, &primary).unwrap();
+
+        assert!((orbit.semi_major_axis - 1.0).abs() < 1e-12);
     }
 
     #[test]
