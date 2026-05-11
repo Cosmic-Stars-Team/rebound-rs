@@ -166,7 +166,7 @@ impl<'a> ParticleRef<'a> {
     }
 
     pub fn into_orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
-        Orbit::try_from_particle(g, self, primary).ok()
+        Orbit::from_particles(g, self, primary)
     }
 
     pub fn irotate(&mut self, rotation: Rotation) -> Option<()> {

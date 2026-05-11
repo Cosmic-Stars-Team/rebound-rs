@@ -42,7 +42,7 @@ pub struct Orbit {
 }
 
 impl Orbit {
-    pub fn try_from_particle<P, Q>(g: f64, particle: &P, primary: &Q) -> Result<Self>
+    pub fn try_from_particles<P, Q>(g: f64, particle: &P, primary: &Q) -> Result<Self>
     where
         P: ParticleRead + ?Sized,
         Q: ParticleRead + ?Sized,
@@ -65,17 +65,12 @@ impl Orbit {
         Ok(orbit.into())
     }
 
-    pub fn from_particle(
-        g: f64,
-        particle: &rb::reb_particle,
-        primary: &rb::reb_particle,
-    ) -> Option<Self> {
-        let mut err = 0;
-        let orbit = unsafe { rb::reb_orbit_from_particle_err(g, *particle, *primary, &mut err) };
-        if err != 0 {
-            return None;
-        }
-        Some(orbit.into())
+    pub fn from_particles<P, Q>(g: f64, particle: &P, primary: &Q) -> Option<Self>
+    where
+        P: ParticleRead + ?Sized,
+        Q: ParticleRead + ?Sized,
+    {
+        Self::try_from_particles(g, particle, primary).ok()
     }
 }
 
@@ -148,7 +143,7 @@ mod tests {
     };
 
     #[test]
-    fn try_from_particle_accepts_owned_particles() {
+    fn try_from_particles_accepts_owned_particles() {
         let primary = create_particle! {
             mass: 1.0,
         };
@@ -161,13 +156,32 @@ mod tests {
         .into_particle()
         .unwrap();
 
-        let orbit = Orbit::try_from_particle(1.0, &particle, &primary).unwrap();
+        let orbit = Orbit::try_from_particles(1.0, &particle, &primary).unwrap();
 
         assert!((orbit.semi_major_axis - 1.0).abs() < 1e-12);
     }
 
     #[test]
-    fn try_from_particle_accepts_particle_refs() {
+    fn from_particles_returns_option_for_owned_particles() {
+        let primary = create_particle! {
+            mass: 1.0,
+        };
+        let particle = create_particle! {
+            classical,
+            primary: primary,
+            g: 1.0,
+            semi_major_axis: 1.0,
+        }
+        .into_particle()
+        .unwrap();
+
+        let orbit = Orbit::from_particles(1.0, &particle, &primary).unwrap();
+
+        assert!((orbit.semi_major_axis - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn try_from_particles_accepts_particle_refs() {
         let mut simulation = Simulation::new();
         let primary = create_particle! {
             mass: 1.0,
@@ -186,7 +200,7 @@ mod tests {
 
         let primary_ref = simulation.get_particle(0).unwrap();
         let particle_ref = simulation.get_particle(1).unwrap();
-        let orbit = Orbit::try_from_particle(1.0, &particle_ref, &primary_ref).unwrap();
+        let orbit = Orbit::try_from_particles(1.0, &particle_ref, &primary_ref).unwrap();
 
         assert!((orbit.semi_major_axis - 1.0).abs() < 1e-12);
     }
