@@ -114,6 +114,9 @@ pub enum OrbitalElementsError {
     #[error("Pal coordinates (`ix`, `iy`) are not valid. Squared sum exceeds 4.")]
     InvalidPalInclinationComponents,
 
+    #[error("A particle reference pointed to null data.")]
+    NullParticle,
+
     #[error("Unknown REBOUND orbital conversion error code: {0}")]
     UnknownOrbitError(i32),
 }

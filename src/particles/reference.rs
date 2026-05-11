@@ -165,11 +165,8 @@ impl<'a> ParticleRef<'a> {
         self.inner.is_null()
     }
 
-    pub fn into_orbit(&self, g: f64, primary: &ParticleRef) -> Option<Orbit> {
-        // TODO: Use reb_orbit_from_particle_err
-        let orbit =
-            unsafe { rb::reb_orbit_from_particle(g, *self.particle()?, *primary.particle()?) };
-        Some(orbit.into())
+    pub fn into_orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
+        Orbit::try_from_particle(g, self, primary).ok()
     }
 
     pub fn irotate(&mut self, rotation: Rotation) -> Option<()> {
