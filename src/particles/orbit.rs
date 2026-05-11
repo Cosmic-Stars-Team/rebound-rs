@@ -8,7 +8,11 @@ pub use pal::PalOrbitalElementsBuilder;
 use common::SemiMajorAxisInput;
 use rebound_bind::{self as rb, reb_orbit};
 
-use crate::particles::Vec3d;
+use crate::{
+    Result,
+    error::OrbitalElementsError,
+    particles::{Particle, Vec3d},
+};
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Orbit {
@@ -38,13 +42,31 @@ pub struct Orbit {
 }
 
 impl Orbit {
+    pub fn try_from_particle(g: f64, particle: &Particle, primary: &Particle) -> Result<Self> {
+        let raw_particle: rb::reb_particle = (*particle).into();
+        let raw_primary: rb::reb_particle = (*primary).into();
+        let mut err = 0;
+
+        let orbit =
+            unsafe { rb::reb_orbit_from_particle_err(g, raw_particle, raw_primary, &mut err) };
+
+        if err != 0 {
+            return Err(OrbitalElementsError::from_orbit_err(err).into());
+        }
+
+        Ok(orbit.into())
+    }
+
     pub fn from_particle(
         g: f64,
         particle: &rb::reb_particle,
         primary: &rb::reb_particle,
     ) -> Option<Self> {
-        // TODO: Use reb_orbit_from_particle_err
-        let orbit = unsafe { rb::reb_orbit_from_particle(g, *particle, *primary) };
+        let mut err = 0;
+        let orbit = unsafe { rb::reb_orbit_from_particle_err(g, *particle, *primary, &mut err) };
+        if err != 0 {
+            return None;
+        }
         Some(orbit.into())
     }
 }
