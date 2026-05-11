@@ -117,13 +117,6 @@ impl Particle {
     pub fn orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
         Orbit::from_particles(g, self, primary)
     }
-
-    pub fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
-    where
-        S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
-    {
-        self
-    }
 }
 
 impl IntoParticle for Particle {
@@ -1367,10 +1360,10 @@ macro_rules! create_particle {
         $particle.set_period($value)
     };
     (@set_common $particle:ident, simulation, $value:expr) => {
-        $particle.with_simulation_defaults($value)
+        $crate::particles::IntoParticle::with_simulation_defaults($particle, $value)
     };
     (@set_common $particle:ident, sim, $value:expr) => {
-        $particle.with_simulation_defaults($value)
+        $crate::particles::IntoParticle::with_simulation_defaults($particle, $value)
     };
     (@set_common $particle:ident, primary, $value:expr) => {
         $particle.set_primary($value)
