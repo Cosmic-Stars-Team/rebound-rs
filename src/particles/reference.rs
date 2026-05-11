@@ -165,7 +165,7 @@ impl<'a> ParticleRef<'a> {
         self.inner.is_null()
     }
 
-    pub fn into_orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
+    pub fn orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
         Orbit::from_particles(g, self, primary)
     }
 

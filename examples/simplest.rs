@@ -42,7 +42,7 @@ fn main() -> Result<()> {
         let orbit = r
             .get_particle(i)
             .ok_or_else(|| Error::Custom("Particle orbit not found".into()))?
-            .into_orbit(r.g(), &primary)
+            .orbit(r.g(), &primary)
             .ok_or_else(|| Error::Custom("Particle orbit not found".into()))?;
 
         println!(

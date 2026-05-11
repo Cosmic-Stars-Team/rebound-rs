@@ -114,7 +114,7 @@ impl Particle {
         particle.set_velocity_vec3d(vel)
     }
 
-    pub fn into_orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
+    pub fn orbit(&self, g: f64, primary: &impl ParticleRead) -> Option<Orbit> {
         Orbit::from_particles(g, self, primary)
     }
 
@@ -1661,7 +1661,7 @@ mod tests {
     }
 
     #[test]
-    fn particle_into_orbit_accepts_owned_primary() {
+    fn particle_orbit_accepts_owned_primary() {
         let primary = create_particle! {
             mass: 1.0,
         };
@@ -1674,7 +1674,7 @@ mod tests {
         .into_particle()
         .unwrap();
 
-        let orbit = particle.into_orbit(1.0, &primary).unwrap();
+        let orbit = particle.orbit(1.0, &primary).unwrap();
 
         assert!((orbit.semi_major_axis - 1.0).abs() < 1e-12);
     }
