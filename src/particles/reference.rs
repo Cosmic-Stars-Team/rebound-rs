@@ -201,12 +201,6 @@ impl<'a> ParticleRead for ParticleRef<'a> {
     }
 }
 
-impl<'a> From<ParticleRef<'a>> for Particle {
-    fn from(particle: ParticleRef<'a>) -> Self {
-        unsafe { (*particle.inner).into() }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::{
