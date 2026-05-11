@@ -182,7 +182,7 @@ dependencies = [
 
 [[package]]
 name = "rebound-rs"
-version = "4.6.0-alpha.0"
+version = "4.6.0-alpha.1"
 dependencies = [
  "rebound-bind",
  "thiserror",

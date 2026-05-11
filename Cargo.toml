@@ -26,7 +26,7 @@ members = [
 default-members = [".", "bind"]
 
 [workspace.package]
-version = "4.6.0-alpha.0"
+version = "4.6.0-alpha.1"
 edition = "2024"
 license = "GPL-3.0"
 
@@ -36,7 +36,7 @@ thiserror = "2"
 bindgen = "0.72.1"
 cc = "1"
 
-rebound-rs = { version = "=4.6.0-alpha.0", path = "." }
+rebound-rs = { version = "=4.6.0-alpha.1", path = "." }
 rebound-bind = { version = "=4.6.0", path = "./bind" }
 
 [dependencies]
