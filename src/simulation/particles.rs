@@ -74,7 +74,7 @@ pub trait SimulationParticlesWrite:
 
     fn irotate(&mut self, rotation: Rotation) -> Option<&mut Self> {
         for mut particle in self.particles() {
-            particle.try_irotate(rotation)?;
+            particle.irotate(rotation)?;
         }
         Some(self)
     }
