@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     Result,
-    particles::{Particle, ParticleBuilder, ParticleRef},
+    particles::{Particle, ParticleBuilder, ParticleRef, ParticleWrite},
     types::Rotation,
     utils,
 };
@@ -74,7 +74,7 @@ pub trait SimulationParticlesWrite:
 
     fn irotate(&mut self, rotation: Rotation) -> Option<&mut Self> {
         for mut particle in self.particles() {
-            particle.irotate(rotation)?;
+            particle.try_irotate(rotation)?;
         }
         Some(self)
     }

@@ -3,6 +3,7 @@ mod integrator;
 mod orbit;
 mod read;
 mod reference;
+mod write;
 
 use rebound_bind as rb;
 
@@ -10,6 +11,7 @@ pub use orbit::Orbit;
 pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
 pub use read::ParticleRead;
 pub use reference::ParticleRef;
+pub use write::ParticleWrite;
 
 use crate::types::Vec3d;
 use crate::{
