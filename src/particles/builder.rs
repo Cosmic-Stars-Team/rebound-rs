@@ -1,7 +1,8 @@
 use crate::{
     Result,
     particles::{
-        ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder, Particle, ParticleBuilder,
+        ClassicalOrbitalElementsBuilder, IntoParticle, Orbit, PalOrbitalElementsBuilder, Particle,
+        ParticleRead,
     },
     simulation::{SimulationParticlesRead, SimulationSettingsRead, SimulationStateRead},
     types::{Rotation, Vec3d},
@@ -113,15 +114,12 @@ impl Particle {
         particle.set_velocity_vec3d(vel)
     }
 
-    pub fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
-    where
-        S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
-    {
-        self
+    pub fn orbit<P: ParticleRead + ?Sized>(&self, g: f64, primary: &P) -> Option<Orbit> {
+        Orbit::from_particles(g, self, primary)
     }
 }
 
-impl ParticleBuilder for Particle {
+impl IntoParticle for Particle {
     fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
     where
         S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
@@ -129,7 +127,7 @@ impl ParticleBuilder for Particle {
         self
     }
 
-    fn build(self) -> Result<Particle> {
+    fn into_particle(self) -> Result<Particle> {
         Ok(self)
     }
 }
@@ -1362,10 +1360,10 @@ macro_rules! create_particle {
         $particle.set_period($value)
     };
     (@set_common $particle:ident, simulation, $value:expr) => {
-        $particle.with_simulation_defaults($value)
+        $crate::particles::IntoParticle::with_simulation_defaults($particle, $value)
     };
     (@set_common $particle:ident, sim, $value:expr) => {
-        $particle.with_simulation_defaults($value)
+        $crate::particles::IntoParticle::with_simulation_defaults($particle, $value)
     };
     (@set_common $particle:ident, primary, $value:expr) => {
         $particle.set_primary($value)
@@ -1617,7 +1615,7 @@ macro_rules! create_particle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{particles::ParticleBuilder, types::Vec3d};
+    use crate::{particles::IntoParticle, types::Vec3d};
 
     #[test]
     fn macro_test() {
@@ -1656,6 +1654,25 @@ mod tests {
     }
 
     #[test]
+    fn particle_orbit_accepts_owned_primary() {
+        let primary = create_particle! {
+            mass: 1.0,
+        };
+        let particle = create_particle! {
+            classical,
+            primary: primary,
+            g: 1.0,
+            semi_major_axis: 1.0,
+        }
+        .into_particle()
+        .unwrap();
+
+        let orbit = particle.orbit(1.0, &primary).unwrap();
+
+        assert!((orbit.semi_major_axis - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
     fn macro_accepts_vec3d_cartesian_fields() {
         let particle = create_particle! {
             position: Vec3d(1.0, 2.0, 3.0),
@@ -1691,7 +1708,7 @@ mod tests {
             time: 0.0,
             semi_major_axis: 1.0,
         }
-        .build()
+        .into_particle()
         .unwrap();
         assert_eq!(classical.acceleration, Vec3d::default());
 
@@ -1701,7 +1718,7 @@ mod tests {
             g: 1.0,
             semi_major_axis: 1.0,
         }
-        .build()
+        .into_particle()
         .unwrap();
         assert_eq!(pal.acceleration, Vec3d::default());
     }

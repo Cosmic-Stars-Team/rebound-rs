@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use rebound_bind as rb;
 
 use crate::{
-    particles::{Orbit, Particle},
+    particles::{Orbit, Particle, ParticleRead},
     types::{Rotation, Vec3d},
     utils,
 };
@@ -157,15 +157,16 @@ impl<'a> ParticleRef<'a> {
         Some(self.particle()?.last_collision)
     }
 
+    pub fn snapshot(&self) -> Option<Particle> {
+        self.particle().copied().map(Into::into)
+    }
+
     pub fn is_null(&self) -> bool {
         self.inner.is_null()
     }
 
-    pub fn into_orbit(&self, g: f64, primary: &ParticleRef) -> Option<Orbit> {
-        // TODO: Use reb_orbit_from_particle_err
-        let orbit =
-            unsafe { rb::reb_orbit_from_particle(g, *self.particle()?, *primary.particle()?) };
-        Some(orbit.into())
+    pub fn orbit<P: ParticleRead + ?Sized>(&self, g: f64, primary: &P) -> Option<Orbit> {
+        Orbit::from_particles(g, self, primary)
     }
 
     pub fn irotate(&mut self, rotation: Rotation) -> Option<()> {
@@ -190,9 +191,9 @@ impl<'a> ParticleRef<'a> {
     }
 }
 
-impl<'a> From<ParticleRef<'a>> for Particle {
-    fn from(particle: ParticleRef<'a>) -> Self {
-        unsafe { (*particle.inner).into() }
+impl<'a> ParticleRead for ParticleRef<'a> {
+    fn snapshot(&self) -> Option<Particle> {
+        ParticleRef::snapshot(self)
     }
 }
 

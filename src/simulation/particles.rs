@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     Result,
-    particles::{Particle, ParticleBuilder, ParticleRef},
+    particles::{IntoParticle, Particle, ParticleRef, ParticleWrite},
     types::Rotation,
     utils,
 };
@@ -64,8 +64,8 @@ pub trait SimulationParticlesRead: SimulationStateRead {
 pub trait SimulationParticlesWrite:
     SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + SimulationWrite
 {
-    fn add_particle(&mut self, particle: impl ParticleBuilder) -> Result<&mut Self> {
-        let particle = particle.with_simulation_defaults(&*self).build()?;
+    fn add_particle(&mut self, particle: impl IntoParticle) -> Result<&mut Self> {
+        let particle = particle.with_simulation_defaults(&*self).into_particle()?;
         unsafe {
             rb::reb_simulation_add(self.raw_mut(), particle.into());
         }

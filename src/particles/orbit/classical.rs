@@ -4,7 +4,7 @@ use rebound_bind as rb;
 
 use crate::{
     error::{OrbitalElementsError, Result},
-    particles::{Particle, ParticleBuilder},
+    particles::{IntoParticle, Particle},
     simulation::{SimulationParticlesRead, SimulationSettingsRead, SimulationStateRead},
     utils,
 };
@@ -367,7 +367,7 @@ impl ClassicalOrbitalElementsBuilder {
     }
 }
 
-impl ParticleBuilder for ClassicalOrbitalElementsBuilder {
+impl IntoParticle for ClassicalOrbitalElementsBuilder {
     fn with_simulation_defaults<S>(self, simulation: &S) -> Self
     where
         S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
@@ -375,7 +375,7 @@ impl ParticleBuilder for ClassicalOrbitalElementsBuilder {
         ClassicalOrbitalElementsBuilder::with_simulation_defaults(self, simulation)
     }
 
-    fn build(self) -> Result<Particle> {
+    fn into_particle(self) -> Result<Particle> {
         let primary = self.resolve_primary()?;
         let g = self.resolve_g()?;
         let semi_major_axis = self.resolve_semi_major_axis(g, primary)?;

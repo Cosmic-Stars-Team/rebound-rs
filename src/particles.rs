@@ -1,13 +1,17 @@
 mod builder;
 mod integrator;
 mod orbit;
+mod read;
 mod reference;
+mod write;
 
 use rebound_bind as rb;
 
 pub use orbit::Orbit;
 pub use orbit::{ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder};
+pub use read::ParticleRead;
 pub use reference::ParticleRef;
+pub use write::ParticleWrite;
 
 use crate::types::Vec3d;
 use crate::{
@@ -70,11 +74,10 @@ impl From<Particle> for rb::reb_particle {
     }
 }
 
-#[doc(hidden)]
-pub trait ParticleBuilder {
+pub trait IntoParticle {
     fn with_simulation_defaults<S>(self, simulation: &S) -> Self
     where
         S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized;
 
-    fn build(self) -> Result<Particle>;
+    fn into_particle(self) -> Result<Particle>;
 }
