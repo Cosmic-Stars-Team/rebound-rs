@@ -32,6 +32,7 @@ impl AdaptiveMode {
 }
 
 pub struct IntegratorIas15<'a> {
+    pub(crate) sim: *mut rb::reb_simulation,
     pub(crate) inner: *mut rb::reb_integrator_ias15,
     pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
@@ -68,5 +69,27 @@ impl<'a> IntegratorIas15<'a> {
 
     pub fn adaptive_mode(&self) -> Option<AdaptiveMode> {
         unsafe { AdaptiveMode::from_raw((*self.inner).adaptive_mode) }
+    }
+
+    pub fn iterations_max_exceeded(&self) -> u64 {
+        unsafe { (*self.inner).iterations_max_exceeded }
+    }
+
+    pub fn timescale(&mut self) -> f64 {
+        unsafe { rb::reb_integrator_ias15_timescale(self.sim) }
+    }
+
+    pub fn step(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_ias15_step(self.sim);
+        }
+        self
+    }
+
+    pub fn reset(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_ias15_reset(self.sim);
+        }
+        self
     }
 }

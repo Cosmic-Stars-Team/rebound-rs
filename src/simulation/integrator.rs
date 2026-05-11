@@ -179,8 +179,10 @@ pub trait SimulationIntegratorWrite: SimulationIntegratorRead + SimulationWrite 
     }
 
     fn ri_ias15(&mut self) -> ias15::IntegratorIas15<'_> {
-        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_ias15 };
+        let sim = self.raw_mut();
+        let ptr = unsafe { &raw mut (*sim).ri_ias15 };
         IntegratorIas15 {
+            sim,
             inner: ptr,
             _marker: PhantomData,
         }
@@ -195,8 +197,10 @@ pub trait SimulationIntegratorWrite: SimulationIntegratorRead + SimulationWrite 
     }
 
     fn ri_whfast(&mut self) -> whfast::IntegratorWhfast<'_> {
-        let ptr = unsafe { &raw mut (*self.raw_mut()).ri_whfast };
+        let sim = self.raw_mut();
+        let ptr = unsafe { &raw mut (*sim).ri_whfast };
         IntegratorWhfast {
+            sim,
             inner: ptr,
             _marker: PhantomData,
         }

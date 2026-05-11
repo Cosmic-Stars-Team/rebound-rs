@@ -1,3 +1,8 @@
+use crate::{
+    error::{IntegratorConfigError, Result},
+    particles::ParticleRef,
+    simulation::{SimulationRead, SimulationWrite},
+};
 use rebound_bind as rb;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -70,6 +75,7 @@ impl Coordinates {
 }
 
 pub struct IntegratorWhfast<'a> {
+    pub(crate) sim: *mut rb::reb_simulation,
     pub(crate) inner: *mut rb::reb_integrator_whfast,
     pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
@@ -151,4 +157,88 @@ impl<'a> IntegratorWhfast<'a> {
     pub fn keep_unsynchronized(&self) -> u32 {
         unsafe { (*self.inner).keep_unsynchronized }
     }
+
+    pub fn from_inertial(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_whfast_from_inertial(self.sim);
+        }
+        self
+    }
+
+    pub fn to_inertial(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_whfast_to_inertial(self.sim);
+        }
+        self
+    }
+
+    pub fn reset(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_whfast_reset(self.sim);
+        }
+        self
+    }
+
+    pub fn init(&mut self) -> Result<&mut Self> {
+        let status = unsafe { rb::reb_integrator_whfast_init(self.sim) };
+        if status == 0 {
+            Ok(self)
+        } else {
+            Err(IntegratorConfigError::InitFailed {
+                integrator: "Whfast",
+            }
+            .into())
+        }
+    }
 }
+
+pub trait SimulationIntegratorWhfastWrite: SimulationWrite {
+    fn whfast_interaction_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_interaction_step(self.raw_mut(), dt);
+        }
+        self
+    }
+
+    fn whfast_jump_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_jump_step(self.raw_mut(), dt);
+        }
+        self
+    }
+
+    fn whfast_kepler_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_kepler_step(self.raw_mut(), dt);
+        }
+        self
+    }
+
+    fn whfast_com_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_com_step(self.raw_mut(), dt);
+        }
+        self
+    }
+}
+
+pub trait SimulationIntegratorWhfastRead: SimulationRead {
+    fn whfast_kepler_solver(
+        &self,
+        particle: &mut ParticleRef<'_>,
+        mass: f64,
+        dt: f64,
+    ) -> Option<&Self> {
+        if particle.is_null() {
+            return None;
+        }
+
+        unsafe {
+            rb::reb_whfast_kepler_solver(self.raw(), particle.inner, mass, 0, dt);
+        }
+        Some(self)
+    }
+}
+
+impl<T: SimulationRead + ?Sized> SimulationIntegratorWhfastRead for T {}
+impl<T: SimulationWrite + ?Sized> SimulationIntegratorWhfastWrite for T {}

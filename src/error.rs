@@ -28,6 +28,9 @@ pub enum IntegratorConfigError {
         integrator: &'static str,
         field: &'static str,
     },
+
+    #[error("Failed to initialize integrator `{integrator}`.")]
+    InitFailed { integrator: &'static str },
 }
 
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
