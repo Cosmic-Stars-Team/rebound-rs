@@ -2,7 +2,7 @@ use core::marker::PhantomData;
 
 use crate::{
     Result,
-    particles::{IntoParticle, Particle, ParticleRef, ParticleWrite},
+    particles::{IntoParticle, Particle, ParticleRef},
     types::Rotation,
     utils,
 };
