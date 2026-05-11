@@ -1617,7 +1617,7 @@ macro_rules! create_particle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{particles::ParticleBuilder, types::Vec3d};
+    use crate::{particles::IntoParticle, types::Vec3d};
 
     #[test]
     fn macro_test() {
@@ -1691,7 +1691,7 @@ mod tests {
             time: 0.0,
             semi_major_axis: 1.0,
         }
-        .build()
+        .into_particle()
         .unwrap();
         assert_eq!(classical.acceleration, Vec3d::default());
 
@@ -1701,7 +1701,7 @@ mod tests {
             g: 1.0,
             semi_major_axis: 1.0,
         }
-        .build()
+        .into_particle()
         .unwrap();
         assert_eq!(pal.acceleration, Vec3d::default());
     }

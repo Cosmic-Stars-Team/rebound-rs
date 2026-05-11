@@ -81,15 +81,3 @@ pub trait IntoParticle {
 
     fn into_particle(self) -> Result<Particle>;
 }
-
-#[doc(hidden)]
-pub trait ParticleBuilder: IntoParticle {
-    fn build(self) -> Result<Particle>
-    where
-        Self: Sized,
-    {
-        self.into_particle()
-    }
-}
-
-impl<T> ParticleBuilder for T where T: IntoParticle {}

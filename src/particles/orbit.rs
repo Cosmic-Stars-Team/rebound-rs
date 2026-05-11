@@ -143,7 +143,7 @@ impl From<Orbit> for reb_orbit {
 mod tests {
     use crate::{
         create_particle,
-        particles::{Orbit, ParticleBuilder},
+        particles::{IntoParticle, Orbit},
         simulation::{Simulation, SimulationParticlesRead, SimulationParticlesWrite},
     };
 
@@ -158,7 +158,7 @@ mod tests {
             g: 1.0,
             semi_major_axis: 1.0,
         }
-        .build()
+        .into_particle()
         .unwrap();
 
         let orbit = Orbit::try_from_particle(1.0, &particle, &primary).unwrap();
@@ -178,7 +178,7 @@ mod tests {
             g: 1.0,
             semi_major_axis: 1.0,
         }
-        .build()
+        .into_particle()
         .unwrap();
 
         simulation.add_particle(primary).unwrap();
