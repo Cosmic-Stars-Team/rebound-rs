@@ -1,0 +1,75 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: Lint and test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang libclang-dev
+
+      - name: Configure libclang on macOS
+        if: runner.os == 'macOS'
+        run: |
+          echo "LIBCLANG_PATH=$(xcrun --find clang | xargs dirname)/../lib" >> "$GITHUB_ENV"
+
+      - name: Install LLVM on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not $env:LLVM_PATH -or -not (Test-Path "$env:LLVM_PATH\bin\libclang.dll")) {
+            choco install llvm -y --no-progress
+          }
+
+      - name: Configure libclang on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $llvmPath = if ($env:LLVM_PATH -and (Test-Path "$env:LLVM_PATH\bin\libclang.dll")) { $env:LLVM_PATH } else { 'C:\Program Files\LLVM' }
+          if (-not (Test-Path "$llvmPath\bin\libclang.dll")) {
+            throw "libclang.dll was not found at $llvmPath\bin"
+          }
+          "LIBCLANG_PATH=$llvmPath\bin" >> $env:GITHUB_ENV
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Run tests
+        run: cargo test --workspace --all-targets
