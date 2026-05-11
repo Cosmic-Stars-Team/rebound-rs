@@ -1,3 +1,7 @@
+use crate::{
+    particles::ParticleRef,
+    simulation::{SimulationRead, SimulationWrite},
+};
 use rebound_bind as rb;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -152,3 +156,54 @@ impl<'a> IntegratorWhfast<'a> {
         unsafe { (*self.inner).keep_unsynchronized }
     }
 }
+
+pub trait SimulationIntegratorWhfastWrite: SimulationWrite {
+    fn whfast_interaction_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_interaction_step(self.raw_mut(), dt);
+        }
+        self
+    }
+
+    fn whfast_jump_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_jump_step(self.raw_mut(), dt);
+        }
+        self
+    }
+
+    fn whfast_kepler_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_kepler_step(self.raw_mut(), dt);
+        }
+        self
+    }
+
+    fn whfast_com_step(&mut self, dt: f64) -> &mut Self {
+        unsafe {
+            rb::reb_whfast_com_step(self.raw_mut(), dt);
+        }
+        self
+    }
+}
+
+pub trait SimulationIntegratorWhfastRead: SimulationRead {
+    fn whfast_kepler_solver(
+        &self,
+        particle: &mut ParticleRef<'_>,
+        mass: f64,
+        dt: f64,
+    ) -> Option<&Self> {
+        if particle.is_null() {
+            return None;
+        }
+
+        unsafe {
+            rb::reb_whfast_kepler_solver(self.raw(), particle.inner, mass, 0, dt);
+        }
+        Some(self)
+    }
+}
+
+impl<T: SimulationRead + ?Sized> SimulationIntegratorWhfastRead for T {}
+impl<T: SimulationWrite + ?Sized> SimulationIntegratorWhfastWrite for T {}
