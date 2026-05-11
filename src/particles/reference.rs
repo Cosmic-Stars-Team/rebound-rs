@@ -195,10 +195,6 @@ impl<'a> ParticleRead for ParticleRef<'a> {
     fn snapshot(&self) -> Option<Particle> {
         ParticleRef::snapshot(self)
     }
-
-    fn raw_particle(&self) -> Option<rb::reb_particle> {
-        self.particle().copied()
-    }
 }
 
 #[cfg(test)]

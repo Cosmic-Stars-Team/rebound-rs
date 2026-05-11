@@ -48,11 +48,13 @@ impl Orbit {
         Q: ParticleRead + ?Sized,
     {
         let raw_particle = particle
-            .raw_particle()
-            .ok_or(Error::OrbitalElements(OrbitalElementsError::NullParticle))?;
+            .snapshot()
+            .ok_or(Error::OrbitalElements(OrbitalElementsError::NullParticle))?
+            .into();
         let raw_primary = primary
-            .raw_particle()
-            .ok_or(Error::OrbitalElements(OrbitalElementsError::NullParticle))?;
+            .snapshot()
+            .ok_or(Error::OrbitalElements(OrbitalElementsError::NullParticle))?
+            .into();
         let mut err = 0;
 
         let orbit =
