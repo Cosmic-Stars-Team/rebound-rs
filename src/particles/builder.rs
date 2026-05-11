@@ -1,7 +1,7 @@
 use crate::{
     Result,
     particles::{
-        ClassicalOrbitalElementsBuilder, PalOrbitalElementsBuilder, Particle, ParticleBuilder,
+        ClassicalOrbitalElementsBuilder, IntoParticle, PalOrbitalElementsBuilder, Particle,
     },
     simulation::{SimulationParticlesRead, SimulationSettingsRead, SimulationStateRead},
     types::{Rotation, Vec3d},
@@ -121,7 +121,7 @@ impl Particle {
     }
 }
 
-impl ParticleBuilder for Particle {
+impl IntoParticle for Particle {
     fn with_simulation_defaults<S>(self, _simulation: &S) -> Self
     where
         S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized,
@@ -129,7 +129,7 @@ impl ParticleBuilder for Particle {
         self
     }
 
-    fn build(self) -> Result<Particle> {
+    fn into_particle(self) -> Result<Particle> {
         Ok(self)
     }
 }

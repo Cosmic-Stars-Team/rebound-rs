@@ -74,11 +74,22 @@ impl From<Particle> for rb::reb_particle {
     }
 }
 
-#[doc(hidden)]
-pub trait ParticleBuilder {
+pub trait IntoParticle {
     fn with_simulation_defaults<S>(self, simulation: &S) -> Self
     where
         S: SimulationParticlesRead + SimulationSettingsRead + SimulationStateRead + ?Sized;
 
-    fn build(self) -> Result<Particle>;
+    fn into_particle(self) -> Result<Particle>;
 }
+
+#[doc(hidden)]
+pub trait ParticleBuilder: IntoParticle {
+    fn build(self) -> Result<Particle>
+    where
+        Self: Sized,
+    {
+        self.into_particle()
+    }
+}
+
+impl<T> ParticleBuilder for T where T: IntoParticle {}
