@@ -1,4 +1,5 @@
 use crate::{
+    error::{IntegratorConfigError, Result},
     particles::ParticleRef,
     simulation::{SimulationRead, SimulationWrite},
 };
@@ -74,6 +75,7 @@ impl Coordinates {
 }
 
 pub struct IntegratorWhfast<'a> {
+    pub(crate) sim: *mut rb::reb_simulation,
     pub(crate) inner: *mut rb::reb_integrator_whfast,
     pub(crate) _marker: core::marker::PhantomData<&'a mut rb::reb_simulation>,
 }
@@ -154,6 +156,39 @@ impl<'a> IntegratorWhfast<'a> {
 
     pub fn keep_unsynchronized(&self) -> u32 {
         unsafe { (*self.inner).keep_unsynchronized }
+    }
+
+    pub fn from_inertial(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_whfast_from_inertial(self.sim);
+        }
+        self
+    }
+
+    pub fn to_inertial(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_whfast_to_inertial(self.sim);
+        }
+        self
+    }
+
+    pub fn reset(&mut self) -> &mut Self {
+        unsafe {
+            rb::reb_integrator_whfast_reset(self.sim);
+        }
+        self
+    }
+
+    pub fn init(&mut self) -> Result<&mut Self> {
+        let status = unsafe { rb::reb_integrator_whfast_init(self.sim) };
+        if status == 0 {
+            Ok(self)
+        } else {
+            Err(IntegratorConfigError::InitFailed {
+                integrator: "Whfast",
+            }
+            .into())
+        }
     }
 }
 
