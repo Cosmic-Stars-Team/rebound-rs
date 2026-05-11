@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 
-use rebound::{
+use rebound_rs::{
     Error, Result, create_particle,
     simulation::{Simulation, SimulationParticlesRead, SimulationParticlesWrite},
     types::{Rotation, Vec3d},

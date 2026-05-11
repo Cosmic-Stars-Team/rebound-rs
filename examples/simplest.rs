@@ -1,5 +1,5 @@
-use rebound::{
-    Result, create_particle,
+use rebound_rs::{
+    Error, Result, create_particle,
     simulation::{
         Simulation, SimulationIntegratorWrite, SimulationParticlesRead, SimulationParticlesWrite,
         SimulationSettingsRead, SimulationStateRead,
@@ -29,21 +29,21 @@ fn main() -> Result<()> {
     for particle in r.particles() {
         let pos = particle
             .position()
-            .ok_or_else(|| rebound::Error::Custom("Particle position not found".into()))?;
+            .ok_or_else(|| Error::Custom("Particle position not found".into()))?;
 
         println!("{} {} {}", pos.0, pos.1, pos.2);
     }
 
     let primary = r
         .get_particle(0)
-        .ok_or_else(|| rebound::Error::Custom("Primary particle not found".into()))?;
+        .ok_or_else(|| Error::Custom("Primary particle not found".into()))?;
 
     for i in 1..r.n() {
         let orbit = r
             .get_particle(i)
-            .ok_or_else(|| rebound::Error::Custom("Particle orbit not found".into()))?
+            .ok_or_else(|| Error::Custom("Particle orbit not found".into()))?
             .into_orbit(r.g(), &primary)
-            .ok_or_else(|| rebound::Error::Custom("Particle orbit not found".into()))?;
+            .ok_or_else(|| Error::Custom("Particle orbit not found".into()))?;
 
         println!(
             "{} {} {}",

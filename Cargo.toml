@@ -15,13 +15,13 @@ include = [
     "LICENSE",
     "Cargo.toml",
     "src/**",
+    "examples/**",
 ]
 
 [workspace]
 resolver = "3"
 members = [
     "bind",
-    "examples/*",
 ]
 default-members = [".", "bind"]
 
