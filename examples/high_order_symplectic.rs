@@ -1,3 +1,5 @@
+#![allow(clippy::excessive_precision)]
+
 use rebound_rs::{
     Result, create_particle,
     simulation::{
