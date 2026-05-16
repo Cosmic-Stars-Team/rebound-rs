@@ -1,10 +1,19 @@
 name: Lint
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to check out before running lint.
+        required: false
+        type: string
   pull_request:
   push:
     branches:
       - main
+
+permissions:
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -24,9 +33,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          submodules: recursive
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -48,8 +57,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          if (-not $env:LLVM_PATH -or -not (Test-Path "$env:LLVM_PATH\bin\libclang.dll")) {
-            choco install llvm -y --no-progress
+          $llvmPath = if ($env:LLVM_PATH) { $env:LLVM_PATH } else { 'C:\Program Files\LLVM' }
+          if (-not (Test-Path "$llvmPath\bin\libclang.dll")) {
+            winget install --id LLVM.LLVM --exact --accept-source-agreements --accept-package-agreements
           }
 
       - name: Configure libclang on Windows
@@ -69,7 +79,11 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Run tests
-        run: cargo test --workspace --all-targets
+        run: cargo test --all-targets
+
+      - name: Verify package
+        if: runner.os == 'Linux'
+        run: cargo package --locked
