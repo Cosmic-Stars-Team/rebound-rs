@@ -1,8 +1,8 @@
 [package]
 name = "rebound-rs"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
+version = "4.6.0-alpha.1"
+edition = "2024"
+license = "GPL-3.0"
 description = "Rust wrapper for the REBOUND N-body simulation library."
 repository = "https://github.com/Cosmic-Stars-Team/rebound-rs"
 homepage = "https://github.com/Cosmic-Stars-Team/rebound-rs"
@@ -18,27 +18,7 @@ include = [
     "examples/**",
 ]
 
-[workspace]
-resolver = "3"
-members = [
-    "bind",
-]
-default-members = [".", "bind"]
-
-[workspace.package]
-version = "4.6.0-alpha.1"
-edition = "2024"
-license = "GPL-3.0"
-
-[workspace.dependencies]
+[dependencies]
 thiserror = "2"
 
-bindgen = "0.72.1"
-cc = "1"
-
-rebound-rs = { version = "=4.6.0-alpha.1", path = "." }
-rebound-bind = { version = "=4.6.0", path = "./bind" }
-
-[dependencies]
-rebound-bind.workspace = true
-thiserror.workspace = true
+rebound-bind = "=4.6.0"
